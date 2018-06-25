@@ -2,7 +2,6 @@
 var restify = require("restify");
 var builder = require("botbuilder");
 var request = require("request");
-var date = require("date");
 
 //Setup Web Server
 var server = restify.createServer();
@@ -12,7 +11,6 @@ server.listen(process.env.port || process.env.PORT || "3978", function(){
 });
 
 //create chat connector for communicating with the bot framework service
-
 var connector = new builder.ChatConnector({
     appId: process.env.MicrosoftAppId,
     appPassword: process.env.MicrosoftAppPassword,
@@ -39,19 +37,15 @@ var bot = new builder.UniversalBot(connector, function(session){
     }
     request(options, function (error, response, body){
         var stock = body;
-        //建立日期物件，放入今天的日期
-        var d = new Date();
-        //當日期是周末，則將日期回到上個周五
-        if (d.getDay()==0)
-            d.setDate(d.getDate()-1);
-        if (d.getDay()==1)
-            d.setDate(d.getDate()-2);
-        //將日期改成ISO規則日期的第0-10個字元 YYYY-mm-dd
 
-        //TODO: 更好的方式是用RegExpression, 找出JSON檔第一筆日期的資料，可以避免節慶日找不到資料
+        //用RegExpression, 找出JSON檔第一筆日期的資料，可以避免節慶日找不到資料
+        var res = JSON.stringify(stock["Time Series (Daily)"]).match(/\d{4}-\d{2}-\d{2}/);
         
-        var tradeday = d.toISOString().slice(0, 10);
-        var close = stock["Time Series (Daily)"][tradeday]["4. close"]
-        session.endDialog(`${tradeday} close at : $${close}`);
+        // var tradeday = d.toISOString().slice(0, 10);
+        var open = stock["Time Series (Daily)"][res]["1. open"]
+        var high = stock["Time Series (Daily)"][res]["2. high"]
+        var low = stock["Time Series (Daily)"][res]["3. low"]
+        var close = stock["Time Series (Daily)"][res]["4. close"]
+        session.endDialog(`${res} \nopen $${open}\nhigh $${high}\nlow $${low}\nclose $${close}`);
     });
 });
