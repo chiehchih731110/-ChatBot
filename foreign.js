@@ -38,12 +38,12 @@ var bot = new builder.UniversalBot(connector, function(session){
     }
     request(options, function (error, response, body){
         var currency = body;
-        var res = JSON.stringify(currency["Realtime Currency Exchange Rate"]);
+        // var res = JSON.stringify(currency["Realtime Currency Exchange Rate"]);
         
-        var FromCurrency = currency["Realtime Currency Exchange Rate"][res]["1. From_Currency Code"]
-        var ToCurrency = currency["Realtime Currency Exchange Rate"][res]["3. To_Currency Code"]
-        var ExchangeRate = currency["Realtime Currency Exchange Rate"][res]["5. Exchange Rate"]
-        session.endDialog(`${res} \nopen $${FromCurrency}\nhigh $${ToCurrency}\nlow $${ExchangeRate}`);
+        var FromCurrency = currency["Realtime Currency Exchange Rate"]["1. From_Currency Code"]
+        var ToCurrency = currency["Realtime Currency Exchange Rate"]["3. To_Currency Code"]
+        var ExchangeRate = currency["Realtime Currency Exchange Rate"]["5. Exchange Rate"]
+        session.endDialog(`\nopen $${FromCurrency}\nhigh $${ToCurrency}\nlow $${ExchangeRate}`);
     });
 
 }) ;
