@@ -2,6 +2,7 @@
 var restify = require("restify");
 var builder = require("botbuilder");
 var request = require("request");
+// var toFixed = require('tofixed');
 
 //Setup Web Server
 var server = restify.createServer();
@@ -37,15 +38,17 @@ var bot = new builder.UniversalBot(connector, function(session){
     }
     request(options, function (error, response, body){
         var stock = body;
-
-        //用RegExpression, 找出JSON檔第一筆日期的資料，可以避免節慶日找不到資料
-        var res = JSON.stringify(stock["Time Series (Daily)"]).match(/\d{4}-\d{2}-\d{2}/);
-        
-        // var tradeday = d.toISOString().slice(0, 10);
-        var open = stock["Time Series (Daily)"][res]["1. open"]
-        var high = stock["Time Series (Daily)"][res]["2. high"]
-        var low = stock["Time Series (Daily)"][res]["3. low"]
-        var close = stock["Time Series (Daily)"][res]["4. close"]
-        session.endDialog(`${res} \nopen $${open}\nhigh $${high}\nlow $${low}\nclose $${close}`);
+        if(stock["Time Series (Daily)"]){
+            //用RegExpression, 找出JSON檔第一筆日期的資料，可以避免節慶日找不到資料
+            var date = JSON.stringify(stock["Time Series (Daily)"]).match(/\d{4}-\d{2}-\d{2}/);
+            //parseFloat 將文字改成Float type, toFixed(2)將數字縮到小數點2位數
+            var open = parseFloat(stock["Time Series (Daily)"][date]["1. open"]).toFixed(2)
+            var high = parseFloat(stock["Time Series (Daily)"][date]["2. high"]).toFixed(2)
+            var low = parseFloat(stock["Time Series (Daily)"][date]["3. low"]).toFixed(2)
+            var close = parseFloat(stock["Time Series (Daily)"][date]["4. close"]).toFixed(2)
+            session.endDialog(`${id.toUpperCase()} : ${date} \nopen $${open}\nhigh $${high}\nlow $${low}\nclose $${close}`);
+        }else{
+            session.endDialog(`沒有找到這個股票!`);
+        }
     });
 });
