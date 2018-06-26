@@ -63,5 +63,5 @@ function(session,results){
         session.endDialog(`\nopen $${fid}\nhigh $${tid}\nlow $${ExchangeRate}`);
     }),
 
-    
+
 ])
