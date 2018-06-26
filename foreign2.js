@@ -51,8 +51,6 @@ function(session,results){
 function(session,results){
     session.dialogData.currencys.tid = results.response;
         
-
-
 },
     request(options, function (error, response, body){
         var currency = body;
