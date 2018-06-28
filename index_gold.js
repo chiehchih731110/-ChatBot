@@ -93,7 +93,7 @@ bot.dialog('us', [
 
 bot.dialog('metal', [
     function (session) {
-        builder.Prompts.choice(session, "請選擇黃金或白銀？", "黃金|白銀", { listStyle: builder.ListStyle.button });
+        builder.Prompts.choice(session, "請選擇黃金或白銀？", "黃金|白銀|鋅|鋁|銅", { listStyle: builder.ListStyle.button });
 
         //=======================回首頁按鈕===========================
         var msg = new builder.Message(session);
@@ -133,7 +133,7 @@ bot.dialog('metal', [
 
                 var tradeday = d.toISOString().slice(0, 10);
                 var getgold = gold["dataset"]["data"][0][4]
-                session.endDialog(`${tradeday} close at : $${getgold}`);
+                session.endDialog(`${tradeday} \n黃金close at : $${getgold}`);
                 session.replaceDialog('metal');
             });
             // TODO 讓request資料已經完成後，才執行session.replaceDialog
@@ -142,7 +142,7 @@ bot.dialog('metal', [
         } else if (session.dialogData.expensive == "白銀") {
             var options = {
                 method: "GET",
-                url: "https://www.quandl.com/api/v3/datasets/LBMA/SILVER.json?",
+                url: "https://www.quandl.com/api/v3/datasets/CHRIS/CME_SI1.json?",
                 // 寫在api url ?後面的參數，要放在qs(key)的Json set內
                 // qs:{
                 //     api_key="sae2Txxu_kQTHFHDxyjr"
@@ -165,14 +165,109 @@ bot.dialog('metal', [
     
                     var tradeday = d.toISOString().slice(0, 10);
                     var getgold = gold["dataset"]["data"][0][4]
-                    session.endDialog(`${tradeday} close at : $${getgold}`);
+                    session.endDialog(`${tradeday} \n白銀close at : $${getgold}`);
                     session.replaceDialog('metal');
                 });
                 // TODO 讓request資料已經完成後，才執行session.replaceDialog
                 // session.endConversation();
                 // session.replaceDialog('metal');
-        }
-        
+        } else if (session.dialogData.expensive == "鋅") {
+            var options = {
+                method: "GET",
+                url: "https://www.quandl.com/api/v3/datasets/LME/AB_ZI.json?",
+                // 寫在api url ?後面的參數，要放在qs(key)的Json set內
+                // qs:{
+                //     api_key="sae2Txxu_kQTHFHDxyjr"
+                // }, 
+                // 指定json格式的輸出
+                json: true
+                }
+                request(options, function (error, response, body) {
+                    var gold = body;
+                    // 建立日期物件，放入今天的日期
+                    var d = new Date();
+                    // 當日期是周末，則將日期回到上個周五
+                    if (d.getDay() == 0)
+                        d.setDate(d.getDate() - 1);
+                    if (d.getDay() == 1)
+                        d.setDate(d.getDate() - 2);
+                    // 將日期改成ISO規則日期的第0-10個字元 YYYY-mm-dd
+    
+                    // TODO:更好的方式是用RegExpression,找出JSON檔第一筆日期的資料,可以避免節慶日找不到資料
+    
+                    var tradeday = d.toISOString().slice(0, 10);
+                    var getgold = gold["dataset"]["data"][0][1]
+                    session.endDialog(`價格描述：Prices in US$ per tonne \n ${tradeday} \n鋅close at : $${getgold}`);
+                    session.replaceDialog('metal');
+                });
+                // TODO 讓request資料已經完成後，才執行session.replaceDialog
+                // session.endConversation();
+                // session.replaceDialog('metal');
+        } else if (session.dialogData.expensive == "鋁") {
+            var options = {
+                method: "GET",
+                url: "https://www.quandl.com/api/v3/datasets/LME/AB_AL.json?",
+                // 寫在api url ?後面的參數，要放在qs(key)的Json set內
+                // qs:{
+                //     api_key="sae2Txxu_kQTHFHDxyjr"
+                // }, 
+                // 指定json格式的輸出
+                json: true
+                }
+                request(options, function (error, response, body) {
+                    var gold = body;
+                    // 建立日期物件，放入今天的日期
+                    var d = new Date();
+                    // 當日期是周末，則將日期回到上個周五
+                    if (d.getDay() == 0)
+                        d.setDate(d.getDate() - 1);
+                    if (d.getDay() == 1)
+                        d.setDate(d.getDate() - 2);
+                    // 將日期改成ISO規則日期的第0-10個字元 YYYY-mm-dd
+    
+                    // TODO:更好的方式是用RegExpression,找出JSON檔第一筆日期的資料,可以避免節慶日找不到資料
+    
+                    var tradeday = d.toISOString().slice(0, 10);
+                    var getgold = gold["dataset"]["data"][0][1]
+                    session.endDialog(`價格描述：Prices in US$ per tonne \n ${tradeday} \n鋁close at : $${getgold}`);
+                    session.replaceDialog('metal');
+                });
+                // TODO 讓request資料已經完成後，才執行session.replaceDialog
+                // session.endConversation();
+                // session.replaceDialog('metal');
+        } else if (session.dialogData.expensive == "銅") {
+            var options = {
+                method: "GET",
+                url: "https://www.quandl.com/api/v3/datasets/LME/AB_CU.json?",
+                // 寫在api url ?後面的參數，要放在qs(key)的Json set內
+                // qs:{
+                //     api_key="sae2Txxu_kQTHFHDxyjr"
+                // }, 
+                // 指定json格式的輸出
+                json: true
+                }
+                request(options, function (error, response, body) {
+                    var gold = body;
+                    // 建立日期物件，放入今天的日期
+                    var d = new Date();
+                    // 當日期是周末，則將日期回到上個周五
+                    if (d.getDay() == 0)
+                        d.setDate(d.getDate() - 1);
+                    if (d.getDay() == 1)
+                        d.setDate(d.getDate() - 2);
+                    // 將日期改成ISO規則日期的第0-10個字元 YYYY-mm-dd
+    
+                    // TODO:更好的方式是用RegExpression,找出JSON檔第一筆日期的資料,可以避免節慶日找不到資料
+    
+                    var tradeday = d.toISOString().slice(0, 10);
+                    var getgold = gold["dataset"]["data"][0][1]
+                    session.endDialog(`價格描述：Prices in US$ per tonne \n ${tradeday} \n銅close at : $${getgold}`);
+                    session.replaceDialog('metal');
+                });
+                // TODO 讓request資料已經完成後，才執行session.replaceDialog
+                // session.endConversation();
+                // session.replaceDialog('metal');
+        }        
     }
 ]);
 // TODO 提供一個trigger event, 讓使用者可以回到首頁選單
