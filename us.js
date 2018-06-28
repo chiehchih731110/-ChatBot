@@ -2,7 +2,6 @@
 var restify = require("restify");
 var builder = require("botbuilder");
 var request = require("request");
-// var toFixed = require('tofixed');
 
 //Setup Web Server
 var server = restify.createServer();
