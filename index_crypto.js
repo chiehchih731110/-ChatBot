@@ -134,7 +134,7 @@ bot.dialog('gold', [
 // TODO 提供一個trigger event, 讓使用者可以回到首頁選單
 bot.dialog('crypto', [
     function (session) {
-        builder.Prompts.choice(session, "請問要您要怎麼查詢加密貨幣?", ["BTC", "ETH", "XRP","XMR","DOGE"], { listStyle: builder.ListStyle.button });
+        builder.Prompts.choice(session, "請問要您要查詢哪個加密貨幣?", ["BTC", "ETH", "XRP","XMR","DOGE"], { listStyle: builder.ListStyle.button });
 
         //=======================回首頁按鈕===========================
         var msg = new builder.Message(session);
