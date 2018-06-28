@@ -22,8 +22,12 @@ server.post('/api/messages', connector.listen());
 
 //create your bot with a function to receive messages from user
 
-var bot = new builder.UniversalBot(connector, function(session){
-    var id = session.message.text;
+var bot = new builder.UniversalBot(connector, [
+    function(session){
+        builder.Prompts.choice(session, "請問要您要怎麼查詢加密貨幣?", ["BTC", "ETH", "XRP","XMR","DOGE"], { listStyle: builder.ListStyle.button });
+    },
+    function (session, results){
+    var id = results.response.entity;
     var options = {
         method:"GET",
         url: "https://min-api.cryptocompare.com/data/price", 
@@ -39,10 +43,10 @@ var bot = new builder.UniversalBot(connector, function(session){
     }
     request(options, function (error, response, body){
         var coin = body;
-        if(stock["Time Series (Daily)"]){                 
-            session.endDialog(`${id}今日價格如下:\nUSD： ${coin.USD} \n新台幣：${coin.TWD}`);
+        if(coin){                 
+            session.endDialog(`${id}今日價格如下:<br>USD： ${coin.USD}<br>新台幣：${coin.TWD}`);
         }else{
             session.endDialog(`沒有找到這個加密貨幣!`);
         }
     });
-});
+}]);
