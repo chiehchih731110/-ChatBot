@@ -22,7 +22,6 @@ server.post('/api/messages', connector.listen());
 // create your bot with a function to receive messages from user
 
 var bot = new builder.UniversalBot(connector, function(session){
-    var id = session.message.text;
     var options = {
         method:"GET",
         url: "https://www.quandl.com/api/v3/datasets/CME/GCZ2018.json?", 

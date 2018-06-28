@@ -2,6 +2,7 @@
 var restify = require("restify");
 var builder = require("botbuilder");
 var request = require("request");
+var date = require("date");
 
 //Setup Web Server
 var server = restify.createServer();
@@ -30,14 +31,14 @@ var bot = new builder.UniversalBot(connector,
 
 bot.dialog('mainMenu', [
     function (session) {
-        builder.Prompts.choice(session, "請問要查詢什麼?", ["美股", "匯率", "台股", "港股", "日股"], { listStyle: builder.ListStyle.button });
+        builder.Prompts.choice(session, "請問要查詢什麼?", ["美股", "匯率", "台股", "港股", "日股", "黃金"], { listStyle: builder.ListStyle.button });
     },
     function (session, results) {
         session.dialogData.ask = results.response.entity;
         if (session.dialogData.ask == "美股")
-            session.replaceDialog('us');
-        else if (session.dialogData.ask == "匯率")
-            session.replaceDialog('foreign');
+            session.replaceDialog('us');        
+        else if (session.dialogData.ask == "黃金")
+            session.replaceDialog('gold'); 
         // TODO 加入每個人寫的功能
     }
 ]);
@@ -80,4 +81,44 @@ bot.dialog('us', [
         session.replaceDialog('us');
     }
 ])
+// TODO 提供一個trigger event, 讓使用者可以回到首頁選單
+
+bot.dialog('gold', [
+    function(session){
+        builder.Prompts.text(session, "請輸入gold:");
+    },
+    function(session, results){
+        
+        var options = {
+            method:"GET",
+            url: "https://www.quandl.com/api/v3/datasets/CME/GCZ2018.json?", 
+            // 寫在api url ?後面的參數，要放在qs(key)的Json set內
+            // qs:{
+            //     api_key="sae2Txxu_kQTHFHDxyjr"
+            // }, 
+            // 指定json格式的輸出
+            json:true
+        }
+        request(options, function (error, response, body){
+            var gold = body;
+            // 建立日期物件，放入今天的日期
+            var d = new Date();
+            // 當日期是周末，則將日期回到上個周五
+            if (d.getDay()==0)
+                d.setDate(d.getDate()-1);
+            if (d.getDay()==1)
+                d.setDate(d.getDate()-2);
+            // 將日期改成ISO規則日期的第0-10個字元 YYYY-mm-dd
+    
+            // TODO:更好的方式是用RegExpression,找出JSON檔第一筆日期的資料,可以避免節慶日找不到資料
+            
+            var tradeday = d.toISOString().slice(0, 10);
+            var getgold = gold["dataset"]["data"][0][4]
+            session.endDialog(`${tradeday} close at : $${getgold}`);
+        });
+        // TODO 讓request資料已經完成後，才執行session.replaceDialog
+        session.endConversation();
+        session.replaceDialog('gold');
+    }
+]);
 // TODO 提供一個trigger event, 讓使用者可以回到首頁選單
