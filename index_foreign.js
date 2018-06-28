@@ -95,18 +95,6 @@ bot.dialog('us', [
 // TODO 提供一個trigger event, 讓使用者可以回到首頁選單
 
 bot.dialog('gold', [
-    // function(session){
-    //     builder.Prompts.text(session, "請輸入gold:");
-    //     //=======================回首頁按鈕===========================
-    //     var msg = new builder.Message(session);
-    //     msg.suggestedActions(builder.SuggestedActions.create(
-    //         session, [
-    //             builder.CardAction.imBack(session, "回首頁", "回首頁")
-    //         ]
-    //     ));
-    //     session.send(msg);
-    //     // ==========================================================
-    // },
     function(session, results){
         
         var options = {
@@ -162,12 +150,6 @@ bot.dialog('foreign', [
         
         builder.Prompts.choice(session,"請問手上有什麼貨幣?","TWD|USD|JPY|EUR|CNY|AUD",
         {listStyle:builder.ListStyle.button})
-    },
-    function(session,results){
-        // 取得要輸入from_currency的資料
-        session.dialogData.fid = results.response.entity;
-        builder.Prompts.choice(session,"請問要換成哪國貨幣?","TWD|USD|JPY|EUR|CNY|AUD",
-        {listStyle:builder.ListStyle.button});
         //=======================回首頁按鈕===========================
         var msg = new builder.Message(session);
         msg.suggestedActions(builder.SuggestedActions.create(
@@ -179,9 +161,17 @@ bot.dialog('foreign', [
         // ==========================================================
     },
     function(session,results){
+        // 取得要輸入from_currency的資料
+        session.dialogData.fid = results.response.entity;
+        builder.Prompts.choice(session,"請問要換成哪國貨幣?","TWD|USD|JPY|EUR|CNY|AUD",
+        {listStyle:builder.ListStyle.button});
+       
+    },
+    function(session,results){
         
         // 取得要輸入to_currency的資料
         session.dialogData.tid = results.response.entity;
+        
         var options = {
             method: "GET",
             url: "https://www.alphavantage.co/query",
