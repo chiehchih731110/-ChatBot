@@ -35,17 +35,12 @@ var bot = new builder.UniversalBot(connector, function(session){
         // apikey:"2C8MUXABNVMED4DS"
         }, 
         //指定json格式的輸出
-        // json:true
+        json:true
     }
     request(options, function (error, response, body){
-        var stock = body;
-        if(stock["Time Series (Daily)"]){
-            //用RegExpression, 找出JSON檔第一筆日期的資料，可以避免節慶日找不到資料
-            // var date = JSON.stringify(stock["Time Series (Daily)"]).match(/\d{4}-\d{2}-\d{2}/);
-            //parseFloat 將文字改成Float type, toFixed(2)將數字縮到小數點2位數
-            // var open = parseFloat(stock["Time Series (Daily)"][date]["1. open"]).toFixed(2)         
-            session.endDialog(`${id.toUpperCase()}今日價格如下:\nUSD： ${USD} \n新台幣：${TWD}`);
-            // session.endDialog(`${id.toUpperCase()} : ${date} \n open $${open}\n high $${high}\n low $${low}\n close $${close}`);
+        var coin = body;
+        if(stock["Time Series (Daily)"]){                 
+            session.endDialog(`${id}今日價格如下:\nUSD： ${coin.USD} \n新台幣：${coin.TWD}`);
         }else{
             session.endDialog(`沒有找到這個加密貨幣!`);
         }
