@@ -25,25 +25,21 @@ var bot = new builder.UniversalBot(connector, function(session){
     var id = session.message.text;
     var options = {
         method:"GET",
-        url: "https://www.alphavantage.co/query", 
+        url: "https://min-api.cryptocompare.com/data/price", 
         //寫在api url ?後面的參數，要放在qs(key)的Json set內
         qs:{
-        function:"CURRENCY_EXCHANGE_RATE",
-        from_currency:id,
-        to_currency:id,
-        apikey:"80WQWZNQQ53A0MLK"
+        fsym: id,
+        tsyms:"USD,TWD",
         }, 
         //指定json格式的輸出
         json:true
     }
     request(options, function (error, response, body){
-        var currency = body;
-        var res = JSON.stringify(currency["Realtime Currency Exchange Rate"]);
-        
-        var FromCurrency = currency["Realtime Currency Exchange Rate"][res]["1. From_Currency Code"]
-        var ToCurrency = currency["Realtime Currency Exchange Rate"][res]["3. To_Currency Code"]
-        var ExchangeRate = currency["Realtime Currency Exchange Rate"][res]["5. Exchange Rate"]
-        session.endDialog(`${res} \nopen $${FromCurrency}\nhigh $${ToCurrency}\nlow $${ExchangeRate}`);
+        var stock = body;
+        if(stock){
+            session.endDialog(`${id}今日價格如下:\nUSD：$${stock.USD} \n新台幣：$${stock.TWD}`);          
+        }else{
+            session.endDialog(`沒有找到這個加密貨幣!`);
+        }
     });
-
-}) ;
+});
