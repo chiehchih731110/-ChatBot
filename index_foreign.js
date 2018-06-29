@@ -75,7 +75,7 @@ bot.dialog('us', [
         }
         request(options, function (error, response, body) {
             var stock = body;
-            if (stock["Time Series (Daily)"]) {
+            if (stock["ime Series (Daily)"]) {
                 //用RegExpression, 找出JSON檔第一筆日期的資料，可以避免節慶日找不到資料
                 var date = JSON.stringify(stock["Time Series (Daily)"]).match(/\d{4}-\d{2}-\d{2}/);
                 //parseFloat 將文字改成Float type, toFixed(2)將數字縮到小數點2位數
