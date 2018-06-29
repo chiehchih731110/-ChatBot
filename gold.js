@@ -47,7 +47,24 @@ var bot = new builder.UniversalBot(connector, function(session){
         // TODO:更好的方式是用RegExpression,找出JSON檔第一筆日期的資料,可以避免節慶日找不到資料
         
         var tradeday = d.toISOString().slice(0, 10);
-        var getgold = gold["dataset"]["data"][0][4]
+        var getgold = gold["dataset"]["data"][0][4];
+        var getname = gold["dataset"]["name"]
+            var getdescription = gold["dataset"]["description"]
+            var msg = new builder.Message(session);
+            msg.attachments([
+                new builder.ReceiptCard(session)
+                .title("查詢明細")
+                // .facts([
+                //     builder.Fact.create(session, `${shipments.customer}`, "訂購人"),
+                //     builder.Fact.create(session, `${shipments.telephone}`, "聯絡電話")
+                // ])
+                .items([
+                    builder.ReceiptItem.create(session, `${getname}`, '金屬'),
+                    builder.ReceiptItem.create(session, `${tradeday}`, '日期'),
+                    builder.ReceiptItem.create(session, `${getdescription}`, '價格描述')
+                ])
+                .total('$${getgold}')
+            ])
         session.endDialog(`${tradeday} close at : $${getgold}`);
     });
 });

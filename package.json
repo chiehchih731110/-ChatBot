@@ -4,16 +4,30 @@
   "description": "create baby chat bot",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "debug": "node --inspect index.js"
   },
   "author": "Richard",
   "license": "ISC",
   "dependencies": {
+    "api-ai-recognizer": "^1.1.1",
     "botbuilder": "^3.15.0",
+    "config": "^1.30.0",
     "date": "^1.0.2",
+    "intents": "^0.1.1",
     "npm": "^6.1.0",
     "request": "^2.87.0",
     "restify": "^7.2.1",
     "tofixed": "^1.0.0"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sharkdaddyAI/fintastic.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sharkdaddyAI/fintastic/issues"
+  },
+  "homepage": "https://github.com/sharkdaddyAI/fintastic#readme"
 }
