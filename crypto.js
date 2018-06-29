@@ -24,7 +24,7 @@ server.post('/api/messages', connector.listen());
 
 var bot = new builder.UniversalBot(connector, [
     function(session){
-        builder.Prompts.choice(session, "請問要您要怎麼查詢加密貨幣?", ["BTC", "ETH", "XRP","XMR","DOGE","熱門加密貨幣"], { listStyle: builder.ListStyle.button });
+        builder.Prompts.choice(session, "請問要您要怎麼查詢加密貨幣?", ["BTC", "ETH", "XRP","XMR","DOGE","熱門加密貨幣"], { listStyle: builder.ListStyle.button});
     },
     function (session, results){
     var id = results.response.entity
