@@ -30,6 +30,7 @@ var bot = new builder.UniversalBot(connector, function(session){
         //     api_key="sae2Txxu_kQTHFHDxyjr"
         // }, 
         // 指定json格式的輸出
+        // Silver https://www.quandl.com/api/v3/datasets/LBMA/SILVER.json?api_key=xfVA7AA5unsfCxshGAKX
         json:true
     }
     request(options, function (error, response, body){
