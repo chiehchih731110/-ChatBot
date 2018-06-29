@@ -53,7 +53,7 @@ var bot = new builder.UniversalBot(connector, [
         var coin = body;
         if(id == "熱門加密貨幣"){
             session.endDialog(
-                `今日熱門貨幣價格如下:<br>比特幣:\nUSD:\n${coin.BTC.USD}\n,\nNTD:\n${coin.BTC.TWD}<br>以太幣: USD:\n${coin.ETH.USD}\n,\nNTD:\n${coin.ETH.TWD}<br>瑞波幣:\nUSD:\n${coin.XRP.USD}\n,\nNTD:\n${coin.XRP.TWD}<br>門羅幣:\nUSD:\n${coin.XMR.USD}\n,\nNTD:\n${coin.XMR.TWD}<br>_狗\n幣\n:\nUSD:\n${coin.DOGE.USD}\n,\nNTD:\n${coin.DOGE.TWD}<br>
+                `今日熱門貨幣價格如下:<br>比特幣\n:\nUSD:\n${coin.BTC.USD}\n,\nNTD:\n${coin.BTC.TWD}<br>以太幣\n:\nUSD:\n${coin.ETH.USD}\n,\nNTD:\n${coin.ETH.TWD}<br>瑞波幣\n:\nUSD:\n${coin.XRP.USD}\n,\nNTD:\n${coin.XRP.TWD}<br>門羅幣\n:\nUSD:\n${coin.XMR.USD}\n,\nNTD:\n${coin.XMR.TWD}<br>🐕狗幣:\nUSD:\n${coin.DOGE.USD}\n,\nNTD:\n${coin.DOGE.TWD}<br>
                 `
             )
         }else{
