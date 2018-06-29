@@ -135,7 +135,7 @@ bot.dialog('gold', [
 
 bot.dialog('tw', [
     function (session) {
-        builder.Prompts.text(session, "請輸入台股Ticker:");
+        builder.Prompts.text(session, "請輸入台股股票代號:");
 
         //=======================回首頁按鈕===========================
         var msg = new builder.Message(session);
