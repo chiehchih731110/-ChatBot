@@ -39,12 +39,12 @@ bot.dialog('mainMenu', [
         else if (session.dialogData.ask == "黃金")
             session.replaceDialog('gold');
         else if (session.dialogData.ask == "港股")
-            session.replaceDialog('hk');
+            session.replaceDialog('hkstock');
         // TODO 加入每個人寫的功能
     }
 ]).triggerAction({ matches: /^回首頁$/ }); //使用者任何時間打入"回首頁"都可以回到首頁
 
-bot.dialog('hk', [
+bot.dialog('hkstock', [
     function (session) {
         builder.Prompts.text(session, "請輸入港股Ticker:");
 
@@ -58,56 +58,32 @@ bot.dialog('hk', [
         session.send(msg);
         // ==========================================================
     },
-    function (session, results) {
-        var id = results.response;
-        var options = {
-            method: "GET",
-            url: "https://www.quandl.com/api/v3/datasets/HKEX/00700.json",
-            //寫在api url ?後面的參數，要放在qs(key)的Json set內
-            qs: {
-            //     function: "TIME_SERIES_DAILY",
-            //     symbol: id,
-            //     apikey: "2C8MUXABNVMED4DS"
-            },
-            //指定json格式的輸出
-            json: true
+    function(session, results){ 
+        session.dialogData.num=results.response;
+        var id2 = session.dialogData.num;
+        var str1 = "https://www.quandl.com/api/v3/datasets/HKEX/"+id2+".json"
+        var options ={
+              method: "GET",
+              url:str1,
+              qs:{                        
+                    api_key:"FGaaWn-aS7oW9ZRYxrZj"
+              },
+              json:true
         }
-        request(options, function (error, response, body) {
-            var stock = body;
-            if (stock["dataset"]) {
-                //用RegExpression, 找出JSON檔第一筆日期的資料，可以避免節慶日找不到資料
-                var data = JSON.stringify(stock["dataset)"]).match(/\d{4}-\d{2}-\d{2}/);
-                //parseFloat 將文字改成Float type, toFixed(2)將數字縮到小數點2位數
-            //     var open = parseFloat(stock["dataset"][date]["1. open"]).toFixed(2)
-                var high = parseFloat(stock["dataset"][data][0][7]).toFixed(2)
-                var low = parseFloat(stock["dataset"][date][0][8]).toFixed(2)
-                var close = parseFloat(stock["dataset"][date][0][9]).toFixed(2)
-                session.send(`${id.toUpperCase()} : ${data} \nhigh $${high}\nlow $${low}\nclose $${close}`);
-                session.replaceDialog('hk');
-            } else {
-                session.send(`沒有找到這個股票!`);
-                session.replaceDialog('hk');
-            }
-        });
+  request(options, function (error, response, body){  
+        var stock = body; 
+        if(stock["dataset"]["data"][0][0]){
+              //用RegExpression, 找出JSON檔第一筆日期的資料，可以避免節慶日找不到資料
+              var date = JSON.stringify(stock["dataset"]["data"][0][0]).match(/\d{4}-\d{2}-\d{2}/);        
+        //TODO: 更好的方式是用RegExpression, 找出JSON檔第一筆日期的資料，可以避免節慶日找不到資料
+        var close = stock["dataset"]["data"][0][9]
+        session.send("請等一下")
+        session.endDialog(`您查詢的結果為${date} 收盤價 at : $${close}`);
+  }else{
+        session.endDialog(`沒有找到這個股票!`);
     }
-])
-request(options, function (error, response, body){
-      var stock = body;
-      //建立日期物件，放入今天的日期
-      var d = new Date();
-      //當日期是周末，則將日期回到上個周五
-      if (d.getDay()==0)
-          d.setDate(d.getDate()-1);
-      if (d.getDay()==1)
-          d.setDate(d.getDate()-2);
-      //將日期改成ISO規則日期的第0-10個字元 YYYY-mm-dd
+  });
+    }
+]);
 
-      //TODO: 更好的方式是用RegExpression, 找出JSON檔第一筆日期的資料，可以避免節慶日找不到資料
-      
-      var tradeday = d.toISOString().slice(0, 10);
-      var close = stock["dataset"]["data"][0][8]
-      session.endDialog(`${tradeday} close at : $${close}`);
-});
-
-
-
+// TODO 提供一個trigger event, 讓使用者可以回到首頁選單
