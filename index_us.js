@@ -50,7 +50,10 @@ bot.dialog('us', [
         var msg = new builder.Message(session);
         msg.suggestedActions(builder.SuggestedActions.create(
             session, [
-                builder.CardAction.imBack(session, "回首頁", "回首頁")
+                builder.CardAction.imBack(session, "回首頁", "回首頁"),
+                builder.CardAction.imBack(session, "我的最愛", "我的最愛"),
+                builder.CardAction.imBack(session, "新增最愛", "新增最愛"),
+                builder.CardAction.imBack(session, "刪除最愛", "刪除最愛")
             ]
         ));
         session.send(msg);
@@ -69,7 +72,7 @@ bot.dialog('us', [
             },
             //指定json格式的輸出
             json: true
-        }
+        };
         request(options, function (error, response, body) {
             var stock = body;
             if (stock["Time Series (Daily)"]) {
@@ -89,6 +92,71 @@ bot.dialog('us', [
         });
     }
 ])
+
+//此功能直接將資料庫中我的最愛的股票全部顯示出來
+bot.dialog('us_favorite', [
+    function (session) {
+        var options = {
+            method: "GET",
+            url: "https://sheetdb.io/api/v1/5b35ec114e823",
+            //指定json格式的輸出
+            json: true
+        };
+        request(options, function (error, response, body) {
+            session.dialogData.fav = body;
+            
+            // if (fav[0].usticker) {
+            // for (var i = 0; i < fav.length; i++) { 
+
+            //     var options = {
+            //         method: "GET",
+            //         url: "https://www.alphavantage.co/query",
+            //         //寫在api url ?後面的參數，要放在qs(key)的Json set內
+            //         qs: {
+            //             function: "TIME_SERIES_DAILY",
+            //             symbol: fav[i].usticker,
+            //             apikey: "2C8MUXABNVMED4DS"
+            //         },
+            //         //指定json格式的輸出
+            //         json: true
+            //     };
+            //     request(options, function (error, response, body) {
+            //         var stock = body;
+            //         //用RegExpression, 找出JSON檔第一筆日期的資料，可以避免節慶日找不到資料
+            //         var date = JSON.stringify(stock["Time Series (Daily)"]).match(/\d{4}-\d{2}-\d{2}/);
+            //         //parseFloat 將文字改成Float type, toFixed(2)將數字縮到小數點2位數
+            //         var close = parseFloat(stock["Time Series (Daily)"][date]["4. close"]).toFixed(2);
+            //         var msg = fav[i].usticker + "close" + close + "\n";
+            //         session.send(msg)
+            //     });
+
+            // }
+            // session.send(msg);
+            // }else{
+            //     sesseion.send(`no data`)
+            // }
+            // });
+
+        });
+    },
+    function (session, results) {
+        session.send(`${session.dialogData.fav}`);
+    }
+]).triggerAction({ matches: /^我的最愛$/ });
+
+//新增股票到我的最愛
+bot.dialog('us_add_favorite', [
+    function (session) {
+        pass;
+    }
+]).triggerAction({ matches: /^新增最愛$/ });
+
+//刪除我的最愛的股票
+bot.dialog('us_del_favorite', [
+    function (session) {
+        pass;
+    }
+]).triggerAction({ matches: /^刪除最愛$/ });
 
 
 bot.dialog('gold', [
