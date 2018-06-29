@@ -139,7 +139,8 @@ bot.dialog('crypto', [
         //=======================回首頁按鈕===========================
         var msg = new builder.Message(session);
         msg.suggestedActions(builder.SuggestedActions.create(
-            session, [builder.CardAction.imBack(session, "回首頁", "回首頁")]
+            session, [builder.CardAction.imBack(session, "回首頁", "回首頁")
+            ]
         ));
         session.send(msg);
         // ==========================================================
@@ -174,20 +175,26 @@ bot.dialog('crypto', [
                     `今日熱門貨幣價格如下:<br>比特幣\n:\nUSD:\n${coin.BTC.USD}\n,\nNTD:\n${coin.BTC.TWD}<br>以太幣\n:\nUSD:\n${coin.ETH.USD}\n,\nNTD:\n${coin.ETH.TWD}<br>瑞波幣\n:\nUSD:\n${coin.XRP.USD}\n,\nNTD:\n${coin.XRP.TWD}<br>門羅幣\n:\nUSD:\n${coin.XMR.USD}\n,\nNTD:\n${coin.XMR.TWD}<br>🐕狗幣:\nUSD:\n${coin.DOGE.USD}\n,\nNTD:\n${coin.DOGE.TWD}<br>
                     `
                 )
+               
+                // session.replaceDialog('cryto')
                 //=======================回首頁按鈕===========================
         var msg = new builder.Message(session);
         msg.suggestedActions(builder.SuggestedActions.create(
-            session, [builder.CardAction.imBack(session, "回首頁", "回首頁")]
+            session, [builder.CardAction.imBack(session, "回首頁", "回首頁")
+            ]
         ));
         session.send(msg);
         // ==========================================================
             }else{
                 if(coin){                 
-                    session.endDialog(`${id}今日價格如下:<br>USD： ${coin.USD}<br>新台幣：${coin.TWD}`);
+                    session.endDialog(`${id}今日價格如下:<br>USD： ${coin.USD}<br>新台幣：${coin.TWD}`)
+                    
+                    // session.replaceDialog('crypto')
                     //=======================回首頁按鈕===========================
         var msg = new builder.Message(session);
         msg.suggestedActions(builder.SuggestedActions.create(
-            session, [builder.CardAction.imBack(session, "回首頁", "回首頁")]
+            session, [builder.CardAction.imBack(session, "回首頁", "回首頁")
+            ]
         ));
         session.send(msg);
         // ==========================================================
