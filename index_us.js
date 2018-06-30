@@ -95,14 +95,14 @@ bot.dialog('us', [
 
 //=================== 列 印 我 的 最 愛 ===================
 bot.dialog('us_favorite', [
-    async function (session) {
+    function (session) {
         var options = {
             method: "GET",
             url: "https://sheetdb.io/api/v1/5b35ec114e823",
             //指定json格式的輸出
             json: true
         };
-        request(options, async function (error, response, body) {
+        request(options, function (error, response, body) {
             session.dialogData.fav = body;
             session.dialogData.msg = "";
             session.dialogData.count = 0;
@@ -110,9 +110,6 @@ bot.dialog('us_favorite', [
                 for (var i = 0; i < session.dialogData.fav.length; i++) {
                     showPrice(session.dialogData.fav[i].usticker, session);                    
                 }
-                // console.log("session.dialogData.msg ===========> "+ session.dialogData.msg)
-                // session.send(session.dialogData.msg);
-                
             }
         });        
     }
