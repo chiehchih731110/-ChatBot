@@ -93,71 +93,132 @@ bot.dialog('us', [
     }
 ])
 
-//此功能直接將資料庫中我的最愛的股票全部顯示出來
+//=================== 列 印 我 的 最 愛 ===================
 bot.dialog('us_favorite', [
-    function (session) {
+    async function (session) {
         var options = {
             method: "GET",
             url: "https://sheetdb.io/api/v1/5b35ec114e823",
             //指定json格式的輸出
             json: true
         };
-        request(options, function (error, response, body) {
+        request(options, async function (error, response, body) {
             session.dialogData.fav = body;
-            
-            // if (fav[0].usticker) {
-            // for (var i = 0; i < fav.length; i++) { 
-
-            //     var options = {
-            //         method: "GET",
-            //         url: "https://www.alphavantage.co/query",
-            //         //寫在api url ?後面的參數，要放在qs(key)的Json set內
-            //         qs: {
-            //             function: "TIME_SERIES_DAILY",
-            //             symbol: fav[i].usticker,
-            //             apikey: "2C8MUXABNVMED4DS"
-            //         },
-            //         //指定json格式的輸出
-            //         json: true
-            //     };
-            //     request(options, function (error, response, body) {
-            //         var stock = body;
-            //         //用RegExpression, 找出JSON檔第一筆日期的資料，可以避免節慶日找不到資料
-            //         var date = JSON.stringify(stock["Time Series (Daily)"]).match(/\d{4}-\d{2}-\d{2}/);
-            //         //parseFloat 將文字改成Float type, toFixed(2)將數字縮到小數點2位數
-            //         var close = parseFloat(stock["Time Series (Daily)"][date]["4. close"]).toFixed(2);
-            //         var msg = fav[i].usticker + "close" + close + "\n";
-            //         session.send(msg)
-            //     });
-
-            // }
-            // session.send(msg);
-            // }else{
-            //     sesseion.send(`no data`)
-            // }
-            // });
-
-        });
-    },
-    function (session, results) {
-        session.send(`${session.dialogData.fav}`);
+            session.dialogData.msg = "";
+            session.dialogData.count = 0;
+            if (!error && response.statusCode == 200) {
+                for (var i = 0; i < session.dialogData.fav.length; i++) {
+                    showPrice(session.dialogData.fav[i].usticker, session);                    
+                }
+                // console.log("session.dialogData.msg ===========> "+ session.dialogData.msg)
+                // session.send(session.dialogData.msg);
+                
+            }
+        });        
     }
 ]).triggerAction({ matches: /^我的最愛$/ });
 
-//新增股票到我的最愛
+
+//============== 印 出 我 的 最 愛 ==================
+async function showPrice(usticker, session) {
+    console.log("beforeRequest: " + usticker);
+    var options = {
+        method: "GET",
+        url: "https://www.alphavantage.co/query",
+        qs: {
+            function: "TIME_SERIES_DAILY",
+            symbol: usticker,
+            apikey: "2C8MUXABNVMED4DS"
+        },
+        json: true
+    };
+    request(options, function (error, response, body) {
+        var stock = body;
+        if (stock["Time Series (Daily)"]) {
+            var date = JSON.stringify(stock["Time Series (Daily)"]).match(/\d{4}-\d{2}-\d{2}/);
+            var close = parseFloat(stock["Time Series (Daily)"][date]["4. close"]).toFixed(2);
+            var msg = usticker.toUpperCase() + " " + date + " close $" + close;       
+            console.log("after request: " + msg);
+            // session.send(msg);
+            session.dialogData.msg += msg+"\n";
+            session.dialogData.count += 1;
+            //TODO 當msg已經與 session.dialogData.fav.length 相同，則執行下面兩個
+            if (session.dialogData.count == session.dialogData.fav.length) {
+            session.send(session.dialogData.msg)
+            session.replaceDialog('us');
+            }
+            // return msg
+        } else {
+            session.send(`沒有找到這個股票!`);
+        }
+    });
+}
+
+//=========== 新 增 股 票 到 我 的 最 愛 =============
 bot.dialog('us_add_favorite', [
     function (session) {
-        pass;
+        builder.Prompts.text(session, "請輸入要新增的美股: ");
+    },
+    function (session, results) {
+        session.dialogData.addus = results.response;
+        addToSheetDB(session.dialogData.addus, session);
+
     }
 ]).triggerAction({ matches: /^新增最愛$/ });
 
-//刪除我的最愛的股票
+
+//========== === 刪 除 我 的 最 愛 股 票 =============
 bot.dialog('us_del_favorite', [
     function (session) {
-        pass;
+        builder.Prompts.text(session, "請輸入要刪除的美股: ");
+    },
+    function (session, results) {
+        session.dialogData.deleteus = results.response;
+        deleteToSheetDB(session.dialogData.deleteus, session);
     }
 ]).triggerAction({ matches: /^刪除最愛$/ });
 
+//=========== function 新增 sheetDB =================
+function addToSheetDB(usticker, session) {
+    console.log("addToSheetDB" + usticker);
+    request({
+        uri: 'https://sheetdb.io/api/v1/5b35ec114e823',
+        json: true,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: {
+            "data": [{
+                "usticker": usticker
+            }]
+        }
+    }, function (error, response, body) {
+        if (!error && response.statusCode == 201) {
+            session.send("儲存成功");
+            session.replaceDialog('us');
+        } else {
+            console.log(error)
+        }
+    });
+}
+
+//=========== function 刪除 sheetDB =================
+function deleteToSheetDB(usticker, session) {
+    console.log("addToSheetDB" + usticker);
+    request({
+        uri: 'https://sheetdb.io/api/v1/5b35ec114e823/usticker/' + usticker,
+        json: true,
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+    }, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+            session.send("刪除成功");
+            session.replaceDialog('us');
+        } else {
+            console.log(error)
+        }
+    });
+}
+//===================================================
 
 bot.dialog('gold', [
     function (session) {
