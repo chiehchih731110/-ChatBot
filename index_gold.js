@@ -100,7 +100,10 @@ bot.dialog('metal', [
         var msg = new builder.Message(session);
         msg.suggestedActions(builder.SuggestedActions.create(
             session, [
-                builder.CardAction.imBack(session, "回首頁", "回首頁")
+                builder.CardAction.imBack(session, "回首頁", "回首頁"),
+                builder.CardAction.imBack(session, "我的最愛", "我的最愛"),
+                builder.CardAction.imBack(session, "新增最愛", "新增最愛"),
+                builder.CardAction.imBack(session, "刪除最愛", "刪除最愛")
             ]
         ));
         session.send(msg);
