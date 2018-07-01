@@ -84,10 +84,10 @@ bot.dialog('us', [
         var msg = new builder.Message(session);
         msg.suggestedActions(builder.SuggestedActions.create(
             session, [
-                builder.CardAction.imBack(session, "首頁", "首頁"),
-                builder.CardAction.imBack(session, "我的最愛", "我的最愛"),
-                builder.CardAction.imBack(session, "新增最愛", "新增最愛"),
-                builder.CardAction.imBack(session, "刪除最愛", "刪除最愛")
+                builder.CardAction.imBack(session, "首頁", "🏠首頁"),
+                builder.CardAction.imBack(session, "我的最愛", "💖我的最愛"),
+                builder.CardAction.imBack(session, "新增最愛", "📁新增最愛"),
+                builder.CardAction.imBack(session, "刪除最愛", "🗑️刪除最愛")
             ]
         ));
         session.send(msg);
@@ -111,13 +111,16 @@ bot.dialog('us', [
             var stock = body;
             if (stock["Time Series (Daily)"]) {
                 //用RegExpression, 找出JSON檔第一筆日期的資料，可以避免節慶日找不到資料
-                var date = JSON.stringify(stock["Time Series (Daily)"]).match(/\d{4}-\d{2}-\d{2}/);
+                // var date = JSON.stringify(stock["Time Series (Daily)"]).match(/\d{4}-\d{2}-\d{2}/);
+                var date = JSON.stringify(stock["Time Series (Daily)"]).match(/\d{4}-\d{2}-\d{2}/g);
                 //parseFloat 將文字改成Float type, toFixed(2)將數字縮到小數點2位數
-                var open = parseFloat(stock["Time Series (Daily)"][date]["1. open"]).toFixed(2)
-                var high = parseFloat(stock["Time Series (Daily)"][date]["2. high"]).toFixed(2)
-                var low = parseFloat(stock["Time Series (Daily)"][date]["3. low"]).toFixed(2)
-                var close = parseFloat(stock["Time Series (Daily)"][date]["4. close"]).toFixed(2)
-                session.send(`${id.toUpperCase()} : ${date} \nopen $${open}\nhigh $${high}\nlow $${low}\nclose $${close}`);
+                var open = parseFloat(stock["Time Series (Daily)"][date[0]]["1. open"]).toFixed(2)
+                var high = parseFloat(stock["Time Series (Daily)"][date[0]]["2. high"]).toFixed(2)
+                var low = parseFloat(stock["Time Series (Daily)"][date[0]]["3. low"]).toFixed(2)
+                var close = parseFloat(stock["Time Series (Daily)"][date[0]]["4. close"]).toFixed(2)
+                var change = parseFloat(stock["Time Series (Daily)"][date[0]]["4. close"]-stock["Time Series (Daily)"][date[1]]["4. close"]).toFixed(2)
+                var changePercent = parseFloat((stock["Time Series (Daily)"][date[0]]["4. close"]-stock["Time Series (Daily)"][date[1]]["4. close"])/stock["Time Series (Daily)"][date[1]]["4. close"]*100).toFixed(2)
+                session.send(`${id.toUpperCase()} : ${date[0]} \nopen $${open}\nhigh $${high}\nlow $${low}\nclose $${close}\nchange $${change}\npercent ${changePercent}%`);
                 session.replaceDialog('us');
             } else {
                 session.send(`沒有找到這個股票!`);
@@ -130,6 +133,7 @@ bot.dialog('us', [
 //===================(us) 列 印 我 的 最 愛 ===================
 bot.dialog('us_favorite', [
     function (session) {
+        session.send(`![search](http://lincoln.edu.my/design_css/images/ProgressImage.gif)`)
         //設定要查詢sheetDB的資料
         var options = {
             method: "GET",
@@ -165,9 +169,11 @@ function showPrice(usticker, session) {
     request(options, function (error, response, body) {
         var stock = body;
         if (stock["Time Series (Daily)"]) {
-            var date = JSON.stringify(stock["Time Series (Daily)"]).match(/\d{4}-\d{2}-\d{2}/);
-            var close = parseFloat(stock["Time Series (Daily)"][date]["4. close"]).toFixed(2);
-            var msg = usticker.toUpperCase() + " " + date + " close $" + close;       
+            var date = JSON.stringify(stock["Time Series (Daily)"]).match(/\d{4}-\d{2}-\d{2}/g);
+            var close = parseFloat(stock["Time Series (Daily)"][date[0]]["4. close"]).toFixed(2);
+            var change = parseFloat(stock["Time Series (Daily)"][date[0]]["4. close"]-stock["Time Series (Daily)"][date[1]]["4. close"]).toFixed(2)
+            var changePercent = parseFloat((stock["Time Series (Daily)"][date[0]]["4. close"]-stock["Time Series (Daily)"][date[1]]["4. close"])/stock["Time Series (Daily)"][date[1]]["4. close"]*100).toFixed(2)
+            var msg = usticker.toUpperCase() + " close $" + close + " change $" + change + "(" + changePercent +"%)";       
             // 每次request資料近來，就加到變數 session.dialogData.msg
             session.dialogData.msg += msg+"\n";
             // 每次request資料近來，就紀錄(已完成的次數+1)
