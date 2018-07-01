@@ -1,7 +1,7 @@
 {
-  "name": "babybot",
+  "name": "fintasticbot",
   "version": "1.0.0",
-  "description": "create baby chat bot",
+  "description": "create stock quote bot",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

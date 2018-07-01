@@ -1,4 +1,4 @@
-// #region 基本內容 勿改!!
+// #region ChatBot基本設定 勿改!!
 var restify = require("restify");
 var builder = require("botbuilder");
 var request = require("request");
@@ -16,7 +16,9 @@ server.post('/api/messages', connector.listen());
 // 歡迎訊息頁
 var bot = new builder.UniversalBot(connector,
     function (session) {
-        session.send('=== 歡 迎 來 到 F i n T a s t i c ===');
+        session.send('![FinTasticLogo](https://gudywedding.com.tw/wp-content/uploads/2018/07/fintastic_logo300x61.jpg)');
+        session.send(' ====== **歡 迎 來 到 F i n T a s t i c** ======');
+
         session.replaceDialog('mainMenu')
     });
 // #endregion
@@ -33,15 +35,15 @@ bot.dialog('mainMenu', [
             session.replaceDialog('gold');
         // TODO 加入每個人寫的功能
     }
-]).triggerAction({ matches: /^回首頁$/ }); //任何時間打入"回首頁"都可以回到此Dialog
+]).triggerAction({ matches: /^首頁$/ }); //任何時間打入"回首頁"都可以回到此Dialog
 // #endregion 首頁
 // #region 共用的sheetDB function 勿改!!===============
 //=========== function 新增Ticker sheetDB =================
-function addToSheetDB(ticker, column, returnDialog, session) {
+function addToSheetDB(ticker, column, sheet, returnDialog, session) {
     // 設定要加入到SheetDB的欄位名(colume), 與儲存內容(ticker)
     var body_data = `[{"${column}" : "${ticker}"}]`;
     request({
-        uri: 'https://sheetdb.io/api/v1/5b35ec114e823',
+        uri: 'https://sheetdb.io/api/v1/5b35ec114e823?sheet='+sheet,
         json: true,
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -51,16 +53,16 @@ function addToSheetDB(ticker, column, returnDialog, session) {
             session.send(ticker+"儲存成功");
             session.replaceDialog(returnDialog);
         } else {
-            console.log(error)
+            console.log(error+"新增sheetDB失敗")
         }
     });
 }
 
 //=========== function 刪除Ticker sheetDB =================
-function deleteToSheetDB(ticker, column, returnDialog, session) {
+function deleteToSheetDB(ticker, column, sheet, returnDialog, session) {
     request({
         // 設定要加入到SheetDB的欄位名(colume), 與儲存內容(ticker)
-        uri: 'https://sheetdb.io/api/v1/5b35ec114e823/'+column+'/' + ticker,
+        uri: 'https://sheetdb.io/api/v1/5b35ec114e823/'+column +'/'+ ticker +'?sheet='+ sheet,
         json: true,
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -69,7 +71,7 @@ function deleteToSheetDB(ticker, column, returnDialog, session) {
             session.send(ticker+"刪除成功");
             session.replaceDialog(returnDialog);
         } else {
-            console.log(error)
+            console.log(error+"刪除sheetDB失敗")
         }
     });
 }
@@ -82,7 +84,7 @@ bot.dialog('us', [
         var msg = new builder.Message(session);
         msg.suggestedActions(builder.SuggestedActions.create(
             session, [
-                builder.CardAction.imBack(session, "回首頁", "回首頁"),
+                builder.CardAction.imBack(session, "首頁", "首頁"),
                 builder.CardAction.imBack(session, "我的最愛", "我的最愛"),
                 builder.CardAction.imBack(session, "新增最愛", "新增最愛"),
                 builder.CardAction.imBack(session, "刪除最愛", "刪除最愛")
@@ -131,7 +133,7 @@ bot.dialog('us_favorite', [
         //設定要查詢sheetDB的資料
         var options = {
             method: "GET",
-            url: "https://sheetdb.io/api/v1/5b35ec114e823",
+            url: "https://sheetdb.io/api/v1/5b35ec114e823?sheet=us",
             json: true
         };
         request(options, function (error, response, body) {
@@ -190,8 +192,8 @@ bot.dialog('add_favorite', [
     function (session, results) {
         session.dialogData.addTicker = results.response;
         //呼叫addToSheetDB function, 將收到的Ticker存入sheetDB, 
-        //column = 存入的google試算表欄位名稱; returnDialog = 完成後回到哪個dialog
-        addToSheetDB(session.dialogData.addTicker.toUpperCase(), column="usticker", returnDialog="us", session);
+        //column = google試算表的欄位名稱; sheet = googe試算表的工作表名稱; returnDialog = 完成後回到哪個dialog
+        addToSheetDB(session.dialogData.addTicker.toUpperCase(), column="usticker", sheet="us", returnDialog="us", session);
     }
 ]).triggerAction({ matches: /^新增最愛$/ });
 
@@ -204,25 +206,24 @@ bot.dialog('del_favorite', [
     function (session, results) {
         session.dialogData.delTicker = results.response;
         //先查詢Ticker是否存在sheetDB
-        //設定要查詢sheetDB的資料
         var options = {
             method: "GET",
-            url: "https://sheetdb.io/api/v1/5b35ec114e823",
+            //設定API ID= 5b35ec114e823 ; sheet= googe試算表的工作表名稱
+            url: "https://sheetdb.io/api/v1/5b35ec114e823?sheet=us",
             json: true
         };
         request(options, function (error, response, body) {
             session.dialogData.myFav = body;
-            //TODO 檢查要刪除的Ticker 是否在sheetDB內, 如果有就刪除Ticker, 沒有就回錯誤訊息
-            //console.log("==========="+session.dialogData.myFav.usticker+"============")
-            // 1 將session.dialogData.myFav 變成一個字串
-            // 2 使用regex比對Ticker是否有在裡面
-            //=========================================================================
-
-            if (!error && response.statusCode == 200) {
-            //呼叫deleteToSheetDB function, 將收到的Ticker從sheetDB刪除
-            //column = 刪除的google試算表欄位名稱; returnDialog = 完成後回到哪個dialog
-            deleteToSheetDB(session.dialogData.delTicker.toUpperCase(), column="usticker", returnDialog="us", session);       
+            // 檢查要刪除的Ticker 是否在sheetDB內(我的最愛), 如果有就刪除Ticker, 沒有就回錯誤訊息
+            for (var i =0; i<session.dialogData.myFav.length; i++){
+                if (session.dialogData.myFav[i].usticker == session.dialogData.delTicker){
+                    //呼叫deleteToSheetDB function, 將收到的Ticker從sheetDB刪除
+                    //column = google試算表的欄位名稱; sheet = googe試算表的工作表名稱; returnDialog = 完成後回到哪個dialog
+                    deleteToSheetDB(session.dialogData.delTicker.toUpperCase(), column="usticker", sheet="us", returnDialog="us", session); 
+                }
             }
+            session.send(session.dialogData.delTicker+"不在最愛名單")
+            session.replaceDialog('us')
         });        
     }
 ]).triggerAction({ matches: /^刪除最愛$/ });
