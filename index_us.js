@@ -2,6 +2,7 @@
 var restify = require("restify");
 var builder = require("botbuilder");
 var request = require("request");
+
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || "3978", function () {
     console.log('%s listening to %s', server.name, server.url);
@@ -218,18 +219,23 @@ bot.dialog('del_favorite', [
             url: "https://sheetdb.io/api/v1/5b35ec114e823?sheet=us",
             json: true
         };
-        request(options, function (error, response, body) {
+        request(options, function(error, response, body) {
             session.dialogData.myFav = body;
+            session.dialogData.isinside = false;
             // 檢查要刪除的Ticker 是否在sheetDB內(我的最愛), 如果有就刪除Ticker, 沒有就回錯誤訊息
             for (var i =0; i<session.dialogData.myFav.length; i++){
-                if (session.dialogData.myFav[i].usticker == session.dialogData.delTicker){
+                if (session.dialogData.myFav[i].usticker == session.dialogData.delTicker.toUpperCase()){
                     //呼叫deleteToSheetDB function, 將收到的Ticker從sheetDB刪除
-                    //column = google試算表的欄位名稱; sheet = googe試算表的工作表名稱; returnDialog = 完成後回到哪個dialog
-                    deleteToSheetDB(session.dialogData.delTicker.toUpperCase(), column="usticker", sheet="us", returnDialog="us", session); 
+                    //column = google試算表的欄位名稱; sheet = googe試算表的工作表名稱; returnDialog = 完成後回到哪個dialog 
+                    session.dialogData.isinside = true;
+                    deleteToSheetDB(session.dialogData.delTicker.toUpperCase(), column="usticker", sheet="us", returnDialog="us", session);
+                    break; 
                 }
+            };
+            if (session.dialogData.isinside==false){
+                session.send(session.dialogData.delTicker+"不在最愛名單👺");
+                session.replaceDialog('us');
             }
-            session.send(session.dialogData.delTicker+"不在最愛名單")
-            session.replaceDialog('us')
         });        
     }
 ]).triggerAction({ matches: /^刪除最愛$/ });
