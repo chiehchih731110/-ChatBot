@@ -314,7 +314,7 @@ bot.dialog('crypto_favorite', [
         //設定要查詢sheetDB的資料
         var options = {
             method: "GET",
-            url: "https://sheetdb.io/api/v1/5b3a27beea7a1?sheet=coin",
+            url: "https://sheetdb.io/api/v1/5b3a27beea7a1?sheet=coin1",
             json: true
         };
         request(options, function (error, response, body) {
@@ -387,7 +387,7 @@ bot.dialog('del_favorite', [
         var options = {
             method: "GET",
             //設定API ID= 5b35ec114e823 ; sheet= googe試算表的工作表名稱
-            url: "https://sheetdb.io/api/v1/5b3a27beea7a1?sheet=coin",
+            url: "https://sheetdb.io/api/v1/5b3a27beea7a1?sheet=coin1",
             json: true
         };
         request(options, function(error, response, body) {
