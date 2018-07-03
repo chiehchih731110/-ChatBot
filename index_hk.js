@@ -47,7 +47,7 @@ bot.dialog('mainMenu', [
 //=========== function 新增Ticker sheetDB =================
 function addToSheetDB(ticker, column, sheet, returnDialog, session) {
     // 設定要加入到SheetDB的欄位名(colume), 與儲存內容(ticker)
-    var body_data = `[{"${column}" : "${ticker}"}]`;
+    var body_data = `[{"${column}" : "$${ticker}"}]`;
     request({
         uri: 'https://sheetdb.io/api/v1/5b3b454109706?sheet='+sheet,
         json: true,
@@ -198,7 +198,7 @@ bot.dialog('add_favorite', [
         //column = google試算表的欄位名稱; sheet = googe試算表的工作表名稱; returnDialog = 完成後回到哪個dialog
         addToSheetDB(session.dialogData.addTicker.toUpperCase(), column="hkticker", sheet="hkstock", returnDialog="hkstock", session);
     }
-]).triggerAction({ matches: /^新增最愛$/ });
+]).triggerAction({ matches: /^新增最愛港股$/ });
 
 
 //================ 刪 除 我 的 最 愛 股 票 =================
