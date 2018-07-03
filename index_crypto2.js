@@ -247,8 +247,12 @@ bot.dialog('crypto_favorite', [
             session.dialogData.count = 0;
             if (!error && response.statusCode == 200) {
                 for (var i = 0; i < session.dialogData.fav.length; i++) {
-                    showPrice(session.dialogData.fav[i].coin_ticker, session);                    
+                    //============R
+                    session.dialogData.tickerlist += session.dialogData.fav[i].coin_ticker+",";
+                    //===========R
                 }
+                console.log("==============tickerlist: "+session.dialogData.tickerlist);
+                showPrice(session.dialogData.tickerlist, session)
             }
         });        
     }
@@ -256,27 +260,28 @@ bot.dialog('crypto_favorite', [
 
 
 //============== 印 出 我 的 最 愛 的 Function ==================
-function showPrice(coin_ticker, session) {
+function showPrice(tickers, session) {
     var options = {
         method: "GET",
         url: "https://min-api.cryptocompare.com/data/pricemulti",
         qs: {
-            fsym:coin_ticker,
+            fsym:tickers,
             tsyms:"USD,TWD",
         },
         json: true
     };
     request(options, function (error, response, body) {
         var coin = body;
+        var msg = "";
         if (coin) {
             for (var i = 0; i < session.dialogData.fav.length; i++) {
-                ticker = session.dialogData.fav[i].coin_ticker;
-                msg += ticker+" : USD$"+ coin[ticker].USD + " TWD$" + coin[ticker].TWD + "\n";
+                ticker = session.dialogData.fav[i].tickers;
+                msg += ticker+" : USD$"+ coin[ticker].USD + " <br>TWD$" + coin[ticker].TWD + "\n";
             }
             session.send(msg);
             session.replaceDialog('crypto');
         } else {
-            session.send(`沒有找到${coin_ticker}`);
+            session.send(`沒有找到${tickers}`);
         }
     });
 }
