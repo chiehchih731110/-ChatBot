@@ -35,7 +35,7 @@ bot.dialog('mainMenu', [
         else if (session.dialogData.ask == "黃金")
             session.replaceDialog('gold');
         else if (session.dialogData.ask == "加密貨幣")
-            session.replaceDialog('crypto0');
+            session.replaceDialog('crypto1');
         // TODO 加入每個人寫的功能
     }
 ]).triggerAction({ matches: /^首頁$/ }); //任何時間打入"回首頁"都可以回到此Dialog
@@ -46,7 +46,7 @@ function addToSheetDB(ticker, column, sheet, returnDialog, session) {
     // 設定要加入到SheetDB的欄位名(colume), 與儲存內容(ticker)
     var body_data = `[{"${column}" : "${ticker}"}]`;
     request({
-        uri: 'https://sheetdb.io/api/v1/5b35ec114e823?sheet='+sheet,
+        uri: 'https://sheetdb.io/api/v1/5b3a27beea7a1?sheet='+sheet,
         json: true,
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -65,7 +65,7 @@ function addToSheetDB(ticker, column, sheet, returnDialog, session) {
 function deleteToSheetDB(ticker, column, sheet, returnDialog, session) {
     request({
         // 設定要加入到SheetDB的欄位名(colume), 與儲存內容(ticker)
-        uri: 'https://sheetdb.io/api/v1/5b35ec114e823/'+column +'/'+ ticker +'?sheet='+ sheet,
+        uri: 'https://sheetdb.io/api/v1/5b3a27beea7a1/'+column +'/'+ ticker +'?sheet='+ sheet,
         json: true,
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -136,15 +136,10 @@ bot.dialog('us', [
 //以下為crypto ======================================
 
 bot.dialog('crypto0', [
-    function (session) {
-        builder.Prompts.choice(session, "請問您想要如何查詢加密貨幣?", ["輸入加密貨幣縮寫查詢","顯示熱門加密貨幣價格"], { listStyle: builder.ListStyle.button });
-    },
+    
     function (session, results) {
-        session.dialogData.ask = results.response.entity;
-        if (session.dialogData.ask == "輸入加密貨幣縮寫查詢")
-            session.replaceDialog('crypto1');
-        else if (session.dialogData.ask == "顯示熱門加密貨幣價格")
-            // 
+        session.dialogData = results.response
+         
             if(true){
                 var options = {
                     method:"GET",
@@ -172,13 +167,10 @@ bot.dialog('crypto0', [
                     }
                     
                 })
-            }
-                   
+            }  
             
-        
-        
     }
-]).triggerAction({ matches: /^首頁$/ }); //任何時間打入"回首頁"都可以回到此Dialog
+]).triggerAction({ matches: /^熱門貨幣$/ }); 
 
 bot.dialog('crypto1', [
     function (session) {
@@ -190,7 +182,8 @@ bot.dialog('crypto1', [
                 builder.CardAction.imBack(session, "首頁", "🏠首頁"),
                 builder.CardAction.imBack(session, "我的最愛", "💖我的最愛"),
                 builder.CardAction.imBack(session, "新增最愛", "📁新增最愛"),
-                builder.CardAction.imBack(session, "刪除最愛", "🗑️刪除最愛")
+                builder.CardAction.imBack(session, "刪除最愛", "🗑️刪除最愛"),
+                builder.CardAction.imBack(session, "熱門貨幣", "💰熱門貨幣")
             ]
         ));
         session.send(msg);
@@ -314,7 +307,7 @@ bot.dialog('crypto_favorite', [
         //設定要查詢sheetDB的資料
         var options = {
             method: "GET",
-            url: "https://sheetdb.io/api/v1/5b3a27beea7a1?sheet=coin1",
+            url: "https://sheetdb.io/api/v1/5b3a27beea7a1?sheet=coin",
             json: true
         };
         request(options, function (error, response, body) {
@@ -371,7 +364,7 @@ bot.dialog('add_favorite', [
         session.dialogData.addTicker = results.response;
         //呼叫addToSheetDB function, 將收到的Ticker存入sheetDB, 
         //column = google試算表的欄位名稱; sheet = googe試算表的工作表名稱; returnDialog = 完成後回到哪個dialog
-        addToSheetDB(session.dialogData.addTicker.toUpperCase(), column="coin_ticker", sheet="coin", returnDialog="crypto0", session);
+        addToSheetDB(session.dialogData.addTicker.toUpperCase(), column="coin_ticker", sheet="coin", returnDialog="crypto1", session);
     }
 ]).triggerAction({ matches: /^新增最愛$/ });
 
@@ -387,7 +380,7 @@ bot.dialog('del_favorite', [
         var options = {
             method: "GET",
             //設定API ID= 5b35ec114e823 ; sheet= googe試算表的工作表名稱
-            url: "https://sheetdb.io/api/v1/5b3a27beea7a1?sheet=coin1",
+            url: "https://sheetdb.io/api/v1/5b3a27beea7a1?sheet=coin",
             json: true
         };
         request(options, function(error, response, body) {
