@@ -229,76 +229,7 @@ bot.dialog('crypto1', [
     }
 ])
 
-// bot.dialog('crypto1', [
-//     function (session, results) {
-//         var id = results.response
-//         //=======================回首頁按鈕===========================
-//         var msg = new builder.Message(session);
-//         msg.suggestedActions(builder.SuggestedActions.create(
-//             session, [builder.CardAction.imBack(session, "回首頁", "回首頁")
-//             ]
-//         ));
-//         session.send(msg);
-//         // ==========================================================
-//         if(id){
-//             var options = {
-//                 method:"GET",
-//                 url: "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,ETH,XRP,XMR,DOGE&tsyms=USD,TWD",           
-//                 json:true
-//             }
-//         }else{
-//             var options = {
-//                 method:"GET",
-//                 url: "https://min-api.cryptocompare.com/data/price", 
-//                 //寫在api url ?後面的參數，要放在qs(key)的Json set內
-//                 qs:{
-//                 fsym: id,
-//                 // symbol: id,
-//                 tsyms:"USD,TWD",
-//                 // apikey:"2C8MUXABNVMED4DS"
-//                 }, 
-//                 //指定json格式的輸出
-//                 json:true
-//             }
-//         }
-//         request(options, function (error, response, body){
-//             var coin = body;
-//             if(id == "熱門加密貨幣"){
-//                 session.endDialog(
-//                     `今日熱門貨幣價格如下:<br>比特幣\n:\nUSD:\n${coin.BTC.USD}\n,\nNTD:\n${coin.BTC.TWD}<br>以太幣\n:\nUSD:\n${coin.ETH.USD}\n,\nNTD:\n${coin.ETH.TWD}<br>瑞波幣\n:\nUSD:\n${coin.XRP.USD}\n,\nNTD:\n${coin.XRP.TWD}<br>門羅幣\n:\nUSD:\n${coin.XMR.USD}\n,\nNTD:\n${coin.XMR.TWD}<br>🐕狗幣:\nUSD:\n${coin.DOGE.USD}\n,\nNTD:\n${coin.DOGE.TWD}<br>
-//                     `
-//                 )
-               
-//                 // session.replaceDialog('cryto')
-//                 //=======================回首頁按鈕===========================
-//         var msg = new builder.Message(session);
-//         msg.suggestedActions(builder.SuggestedActions.create(
-//             session, [builder.CardAction.imBack(session, "回首頁", "回首頁")
-//             ]
-//         ));
-//         session.send(msg);
-//         // ==========================================================
-//             }else{
-//                 if(coin){                 
-//                     session.endDialog(`${id}今日價格如下:<br>USD： ${coin.USD}<br>新台幣：${coin.TWD}`)
-                    
-//                     // session.replaceDialog('crypto')
-//                     //=======================回首頁按鈕===========================
-//         var msg = new builder.Message(session);
-//         msg.suggestedActions(builder.SuggestedActions.create(
-//             session, [builder.CardAction.imBack(session, "回首頁", "回首頁")
-//             ]
-//         ));
-//         session.send(msg);
-//         // ==========================================================
-//                 }else{
-//                     session.endDialog(`沒有找到這個加密貨幣!`);
-//                 }
-//             }
-            
-//         });
-//     }
-// ])
+
 
 //===================(us) 列 印 我 的 最 愛 ===================
 bot.dialog('crypto_favorite', [
@@ -337,17 +268,13 @@ function showPrice(coin_ticker, session) {
     };
     request(options, function (error, response, body) {
         var coin = body;
-        if (coin) {            
-            var msg = coin_ticker.toUpperCase() + "USD:" + coin.USD + "TWD:" + coin.TWD;       
-            // 每次request資料近來，就加到變數 session.dialogData.msg
-            session.dialogData.msg += msg+"\n";
-            // 每次request資料近來，就紀錄(已完成的次數+1)
-            session.dialogData.count += 1;  
-            // 當(已完成)次數與session.dialogData.fav.length(我的最愛名單的長度)相同，則執行 1列印 2回到美股首頁
-            if (session.dialogData.count == session.dialogData.fav.length) {
-                session.send(session.dialogData.msg)
-                session.replaceDialog('crypto0');
+        if (coin) {
+            for (var i = 0; i < session.dialogData.fav.length; i++) {
+                ticker = session.dialogData.fav[i].coin_ticker;
+                msg += ticker+" : USD$"+ coin[ticker].USD + " TWD$" + coin[ticker].TWD + "\n";
             }
+            session.send(msg);
+            session.replaceDialog('crypto');
         } else {
             session.send(`沒有找到${coin_ticker}`);
         }
