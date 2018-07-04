@@ -164,17 +164,6 @@ bot.dialog('tw', [
         request(options, function (error, response, body) {
             var stock = body;
             if (stock.stat == "OK") {
-                // var fields_date = JSON.stringify(stock["fields"]).match(/\d{4}-\d{2}-\d{2}/);
-                //用RegExpression, 找出JSON檔第一筆日期的資料，可以避免節慶日找不到資料
-                // var date = JSON.stringify(stock["Time Series (Daily)"]).match(/\d{4}-\d{2}-\d{2}/);
-                //parseFloat 將文字改成Float type, toFixed(2)將數字縮到小數點2位數
-                // var open = parseFloat(stock["Time Series (Daily)"][date]["1. open"]).toFixed(2)
-                // var fields_Trading_Volume = parseFloat(stock["Time Series (Daily)"][date]["1. open"]).toFixed(2)
-                // var high = parseFloat(stock["Time Series (Daily)"][date]["2. high"]).toFixed(2)
-                // var low = parseFloat(stock["Time Series (Daily)"][date]["3. low"]).toFixed(2)
-                // var close = parseFloat(stock["Time Series (Daily)"][date]["4. close"]).toFixed(2)
-
-
                 session.send(`股票代號:${id}
                 股票名稱:${stock.title.substr(13,14)}
                 日期:${stock.data[stock.data.length-1][0]}
@@ -186,8 +175,6 @@ bot.dialog('tw', [
                 收盤價:${stock.data[stock.data.length-1][6]}
                 漲跌價差:${stock.data[stock.data.length-1][7]}
                 成交筆數:${stock.data[stock.data.length-1][8]}`);
-                // session.replaceDialog('tw');
-                //console.log(123)
             } else {
                 session.send(`沒有找到這個股票!`);
                 session.replaceDialog('tw');

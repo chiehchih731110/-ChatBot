@@ -100,10 +100,10 @@ bot.dialog('metal', [
         var msg = new builder.Message(session);
         msg.suggestedActions(builder.SuggestedActions.create(
             session, [
-                builder.CardAction.imBack(session, "回首頁", "回首頁"),
-                builder.CardAction.imBack(session, "我的最愛", "我的最愛"),
-                builder.CardAction.imBack(session, "新增最愛", "新增最愛"),
-                builder.CardAction.imBack(session, "刪除最愛", "刪除最愛")
+                builder.CardAction.imBack(session, "回首頁", "🏦回首頁"),
+                builder.CardAction.imBack(session, "我的最愛金屬", "💗我的最愛金屬"),
+                builder.CardAction.imBack(session, "新增最愛金屬", "💘新增最愛金屬"),
+                builder.CardAction.imBack(session, "刪除最愛金屬", "💔刪除最愛金屬")
             ]
         ));
         session.send(msg);
@@ -155,16 +155,16 @@ bot.dialog('metal_favorite', [
             session.dialogData.count = 0;
             if (!error && response.statusCode == 200) {
                 for (var i = 0; i < session.dialogData.fav.length; i++) {
-                    showPrice(session.dialogData.fav[i].MetalName, session);
+                    showMetalPrice(session.dialogData.fav[i].MetalName, session);
                 }
             }
         });        
     }
-]).triggerAction({ matches: /^我的最愛$/ });
+]).triggerAction({ matches: /^我的最愛金屬$/ });
 
 
 //============== 印 出 我 的 最 愛 最 新 收 盤 價==================
-function showPrice(MetalName, session) {
+function showMetalPrice(MetalName, session) {
     console.log("beforeRequest: " + MetalName);
     // 各個金屬api
     var metal_url = "https://www.quandl.com/api/v3/datasets/CHRIS/CME_" + MetalName + "1.json";
@@ -178,9 +178,6 @@ function showPrice(MetalName, session) {
     };
     request(options, function (error, response, body) {
         var m_body = body;
-        console.log("=======")
-        console.log(m_body)
-        console.log("=======")
         // TODO:用RegExpression,找出JSON檔第一筆日期的資料,可以避免節慶日找不到資料
         // var getDate = JSON.stringify(gold["dataset"]["data"][0]).match(/\d{4}-\d{2}-\d{2}/);
         var getDate = m_body["dataset"]["data"][0][0];
@@ -208,26 +205,26 @@ bot.dialog('metal_add_favorite', [
     },
     function (session, results) {
         session.dialogData.addus = results.response;
-        addToSheetDB(session.dialogData.addus, session);
+        addToMetalSheetDB(session.dialogData.addus, session);
 
     }
-]).triggerAction({ matches: /^新增最愛$/ });
+]).triggerAction({ matches: /^新增最愛金屬$/ });
 
 
 //========== === 刪 除 我 的 最 愛 =============
-bot.dialog('us_del_favorite', [
+bot.dialog('metal_del_favorite', [
     function (session) {
         builder.Prompts.text(session, "請輸入要刪除的金屬: ");
     },
     function (session, results) {
         session.dialogData.deleteus = results.response;
-        deleteToSheetDB(session.dialogData.deleteus, session);
+        deleteToMetalSheetDB(session.dialogData.deleteus, session);
     }
-]).triggerAction({ matches: /^刪除最愛$/ });
+]).triggerAction({ matches: /^刪除最愛金屬$/ });
 
 //=========== function 新增 sheetDB =================
-function addToSheetDB(MetalName, session) {
-    console.log("addToSheetDB" + MetalName);
+function addToMetalSheetDB(MetalName, session) {
+    console.log("addToMetalSheetDB" + MetalName);
     request({
         uri: 'https://sheetdb.io/api/v1/5b3606b4e4fa2',
         json: true,
@@ -249,8 +246,8 @@ function addToSheetDB(MetalName, session) {
 }
 
 //=========== function 刪除 sheetDB =================
-function deleteToSheetDB(MetalName, session) {
-    console.log("addToSheetDB" + MetalName);
+function deleteToMetalSheetDB(MetalName, session) {
+    console.log("addToMetalSheetDB" + MetalName);
     request({
         uri: 'https://sheetdb.io/api/v1/5b3606b4e4fa2/MetalName/' + MetalName,
         json: true,
