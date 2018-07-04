@@ -39,7 +39,7 @@ bot.dialog('mainMenu', [
         else if (session.dialogData.ask == "黃金")
             session.replaceDialog('gold');
         else if (session.dialogData.ask == "港股")
-            session.replaceDialog('hkstock');
+            session.replaceDialog('hkstock1');
         // TODO 加入每個人寫的功能
     }
 ]).triggerAction({ matches: /^回首頁$/ }); //使用者任何時間打入"回首頁"都可以回到首頁
@@ -47,7 +47,7 @@ bot.dialog('mainMenu', [
 //=========== function 新增Ticker sheetDB =================
 function addToSheetDB(ticker, column, sheet, returnDialog, session) {
     // 設定要加入到SheetDB的欄位名(colume), 與儲存內容(ticker)
-    var body_data = `[{"${column}" : "$${ticker}"}]`;
+    var body_data = `[{"${column}" : "${ticker}"}]`;
     request({
         uri: 'https://sheetdb.io/api/v1/5b3b454109706?sheet='+sheet,
         json: true,
@@ -68,7 +68,7 @@ function addToSheetDB(ticker, column, sheet, returnDialog, session) {
 function deleteToSheetDB(ticker, column, sheet, returnDialog, session) {
     request({
         // 設定要加入到SheetDB的欄位名(colume), 與儲存內容(ticker)
-        uri: 'https://sheetdb.io/api/v1/5b3b454109706'+column +'/'+ ticker +'?sheet='+ sheet,
+        uri: 'https://sheetdb.io/api/v1/5b3b454109706/'+column +'/'+ ticker +'?sheet='+ sheet,
         json: true,
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -82,7 +82,7 @@ function deleteToSheetDB(ticker, column, sheet, returnDialog, session) {
     });
 }
 // #endregion =====sheetDB====================================================
-bot.dialog('hkstock', [
+bot.dialog('hkstock1', [
     function (session) {
         builder.Prompts.text(session, "請輸入港股Ticker:");
 
@@ -91,9 +91,9 @@ bot.dialog('hkstock', [
         msg.suggestedActions(builder.SuggestedActions.create(
             session, [
                 builder.CardAction.imBack(session, "首頁", "🏠首頁"),
-                builder.CardAction.imBack(session, "我的最愛", "💖我的最愛港股"),
-                builder.CardAction.imBack(session, "新增最愛", "📁新增最愛港股"),
-                builder.CardAction.imBack(session, "刪除最愛", "🗑️刪除最愛港股")
+                builder.CardAction.imBack(session, "我的最愛港股", "💖我的最愛港股"),
+                builder.CardAction.imBack(session, "新增最愛港股", "📁新增最愛港股"),
+                builder.CardAction.imBack(session, "刪除最愛港股", "🗑️刪除最愛港股")
             ]
         ));
         session.send(msg);
@@ -120,10 +120,10 @@ bot.dialog('hkstock', [
         var close = stock["dataset"]["data"][0][9]
         session.send("請等一下")
         session.endDialog(`您查詢的結果為${date} 收盤價 at : $${close}`);
-        session.replaceDialog('hkstock');
+        session.replaceDialog('hkstock1');
   }else{
         session.endDialog(`沒有找到這個股票!`);
-        session.replaceDialog('hkstock');
+        session.replaceDialog('hkstock1');
     }
   });
     }
@@ -154,9 +154,12 @@ bot.dialog('hk_favorite', [
 
 //============== 印 出 我 的 最 愛 的 Function ==================
 function showPrice(hkticker, session) {
-    session.dialogData.num=results.response;
-        var id2 = session.dialogData.num;
-        var str1 = "https://www.quandl.com/api/v3/datasets/HKEX/"+id2+".json"
+    if(hkticker<10){
+        kk="0000"+hkticker;
+    }else{kk="000"+hkticker}
+    
+    var str1 = "https://www.quandl.com/api/v3/datasets/HKEX/"+kk+".json"
+    
     var options = {
         method: "GET",
         url: str1,
@@ -167,21 +170,23 @@ function showPrice(hkticker, session) {
     };
     request(options, function (error, response, body) {
         var stock = body;
+        
         if (stock["dataset"]["data"][0][0]) {
             var date = JSON.stringify(stock["dataset"]["data"][0][0]).match(/\d{4}-\d{2}-\d{2}/);
             
             var close = stock["dataset"]["data"][0][9]  
+            var msg = "股票號碼"+hkticker.toUpperCase() +"日期"+date+ " close $" + close;    
             // 每次request資料近來，就加到變數 session.dialogData.msg
-            session.dialogData.msg += date+close+"\n";
+            session.dialogData.msg += msg+"\n";
             // 每次request資料近來，就紀錄(已完成的次數+1)
             session.dialogData.count += 1;  
             // 當(已完成)次數與session.dialogData.fav.length(我的最愛名單的長度)相同，則執行 1列印 2回到美股首頁
             if (session.dialogData.count == session.dialogData.fav.length) {
                 session.send(session.dialogData.msg)
-                session.replaceDialog('hkstock');
+                session.replaceDialog('hkstock1');
             }
         } else {
-            session.send(`沒有找到${hkticker}`);
+            session.send(`沒有找到${kk}`);
         }
     });
 }
@@ -196,7 +201,7 @@ bot.dialog('add_favorite', [
         session.dialogData.addTicker = results.response;
         //呼叫addToSheetDB function, 將收到的Ticker存入sheetDB, 
         //column = google試算表的欄位名稱; sheet = googe試算表的工作表名稱; returnDialog = 完成後回到哪個dialog
-        addToSheetDB(session.dialogData.addTicker.toUpperCase(), column="hkticker", sheet="hkstock", returnDialog="hkstock", session);
+        addToSheetDB(session.dialogData.addTicker.toUpperCase(), column="hkticker", sheet="hkstock", returnDialog="hkstock1", session);
     }
 ]).triggerAction({ matches: /^新增最愛港股$/ });
 
@@ -223,14 +228,16 @@ bot.dialog('del_favorite', [
                 if (session.dialogData.myFav[i].hkticker == session.dialogData.delTicker.toUpperCase()){
                     //呼叫deleteToSheetDB function, 將收到的Ticker從sheetDB刪除
                     //column = google試算表的欄位名稱; sheet = googe試算表的工作表名稱; returnDialog = 完成後回到哪個dialog 
+                    
                     session.dialogData.isinside = true;
-                    deleteToSheetDB(session.dialogData.delTicker.toUpperCase(), column="hkticker", sheet="hkstock", returnDialog="hkstock", session);
+                    deleteToSheetDB(session.dialogData.delTicker.toUpperCase(), column="hkticker", sheet="hkstock", returnDialog="hkstock1", session);
+                    console.log(session.dialogData.delTicker.toUpperCase())
                     break; 
                 }
             };
             if (session.dialogData.isinside==false){
                 session.send(session.dialogData.delTicker+"不在最愛名單👺");
-                session.replaceDialog('hkstock');
+                session.replaceDialog('hkstock1');
             }
         });        
     }
