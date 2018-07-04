@@ -208,22 +208,10 @@ bot.dialog('crypto1', [
             var coin = body;
             if(coin.Response != "Error"){                 
                 session.endDialog(`${id}今日價格如下:<br>USD： ${coin.USD}<br>新台幣：${coin.TWD}`)
-                //=======================回首頁按鈕===========================
-                var msg = new builder.Message(session);
-                msg.suggestedActions(builder.SuggestedActions.create(
-                    session, [builder.CardAction.imBack(session, "回首頁", "回首頁")]
-                ));
-                session.send(msg);
-                // ==========================================================
+                session.replaceDialog('crypto1')
             }else{
                 session.endDialog(`沒有找到這個加密貨幣!`)
-                //=======================回首頁按鈕===========================
-                var msg = new builder.Message(session);
-                msg.suggestedActions(builder.SuggestedActions.create(
-                    session, [builder.CardAction.imBack(session, "回首頁", "回首頁")]
-                ));
-                session.send(msg);
-                // ==========================================================
+                session.replaceDialog('crypto1')
             }
         });
     }
@@ -243,13 +231,14 @@ bot.dialog('crypto_favorite', [
         };
         request(options, function (error, response, body) {
             session.dialogData.fav = body;
-            session.dialogData.msg = "";
+            session.dialogData.tickerlist = "";
+            //------------------^^^^^^^^^^ fix (error:msg)
             session.dialogData.count = 0;
             if (!error && response.statusCode == 200) {
                 for (var i = 0; i < session.dialogData.fav.length; i++) {
-                    //============R
+                    //============
                     session.dialogData.tickerlist += session.dialogData.fav[i].coin_ticker+",";
-                    //===========R
+                    //===========
                 }
                 console.log("==============tickerlist: "+session.dialogData.tickerlist);
                 showPrice(session.dialogData.tickerlist, session)
@@ -265,23 +254,25 @@ function showPrice(tickers, session) {
         method: "GET",
         url: "https://min-api.cryptocompare.com/data/pricemulti",
         qs: {
-            fsym:tickers,
+            fsyms:tickers,
             tsyms:"USD,TWD",
         },
         json: true
     };
     request(options, function (error, response, body) {
         var coin = body;
+        console.log("****************coin"+coin.BTC.USD)
         var msg = "";
         if (coin) {
             for (var i = 0; i < session.dialogData.fav.length; i++) {
-                ticker = session.dialogData.fav[i].tickers;
-                msg += ticker+" : USD$"+ coin[ticker].USD + " <br>TWD$" + coin[ticker].TWD + "\n";
+                ticker = session.dialogData.fav[i].coin_ticker;
+                msg += ticker+"\n:\nUSD\n:\n"+ coin[ticker].USD + "\n,新台幣\n:\n" + coin[ticker].TWD + "\n\n";
             }
             session.send(msg);
-            session.replaceDialog('crypto');
+            session.replaceDialog('crypto1');
         } else {
-            session.send(`沒有找到${tickers}`);
+            session.send(`沒有找到${coin_ticker}`)
+            session.replaceDialog('crypto1');
         }
     });
 }
