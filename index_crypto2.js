@@ -138,6 +138,7 @@ bot.dialog('us', [
 bot.dialog('crypto0', [
     
     function (session, results) {
+        // session.send(`![search](https://media.giphy.com/media/l0HUpt2s9Pclgt9Vm/giphy.gif)`)
         session.dialogData = results.response
          
             if(true){
@@ -222,7 +223,7 @@ bot.dialog('crypto1', [
 //===================(us) 列 印 我 的 最 愛 ===================
 bot.dialog('crypto_favorite', [
     function (session) {
-        session.send(`![search](http://lincoln.edu.my/design_css/images/ProgressImage.gif)`)
+        session.send(`![search](https://media.giphy.com/media/l0HUpt2s9Pclgt9Vm/giphy.gif)`)
         //設定要查詢sheetDB的資料
         var options = {
             method: "GET",
