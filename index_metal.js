@@ -103,7 +103,8 @@ bot.dialog('metal', [
                 builder.CardAction.imBack(session, "回首頁", "🏦回首頁"),
                 builder.CardAction.imBack(session, "我的最愛金屬", "💗我的最愛金屬"),
                 builder.CardAction.imBack(session, "新增最愛金屬", "💘新增最愛金屬"),
-                builder.CardAction.imBack(session, "刪除最愛金屬", "💔刪除最愛金屬")
+                builder.CardAction.imBack(session, "刪除最愛金屬", "💔刪除最愛金屬"),
+                builder.CardAction.imBack(session, "投顧老師", "🤞投顧老師")
             ]
         ));
         session.send(msg);
@@ -133,9 +134,11 @@ bot.dialog('metal', [
             var getLow  = m_body["dataset"]["data"][0][3];
             var getLast = m_body["dataset"]["data"][0][4];
             session.endDialog(`Name ${metal_name} \nDate ${getDate} \nopen $${getOpen} \nhigh $${getHigh} \nlow $${getLow} \nLast $${getLast}`);
-            session.replaceDialog('metal');
+            // session.replaceDialog('metal');
+            session.replaceDialog('recommend');
+            // session.replaceDialog('metal_qna');
             // TODO 讓request資料已經完成後，才執行session.replaceDialog
-        });
+        });        
     }
 ]);
 
@@ -201,10 +204,10 @@ function showMetalPrice(MetalName, session) {
 //=========== 新 增 到 我 的 最 愛 =============
 bot.dialog('metal_add_favorite', [
     function (session) {
-        builder.Prompts.text(session, "請輸入要新增的金屬: ");
+        builder.Prompts.choice(session, "請選擇您想加入最愛的金屬？", "GC|HG|SI|PL|PA", { listStyle: builder.ListStyle.button });
     },
     function (session, results) {
-        session.dialogData.addus = results.response;
+        session.dialogData.addus = results.response.entity;
         addToMetalSheetDB(session.dialogData.addus, session);
 
     }
@@ -263,3 +266,97 @@ function deleteToMetalSheetDB(MetalName, session) {
     });
 }
 //===================================================
+
+bot.dialog('metal_care', [
+    function(session) {
+        session.dialogData.cares = {};        
+        session.send('請先回答以下問題好為您推薦符合您需求的投顧老師');
+        builder.Prompts.choice(session, "請問您希望的老師性別?", "男|女|皆可", { listStyle: builder.ListStyle.button });
+    },
+    function( session, results) {
+        session.dialogData.cares.gender = results.response.entity;
+        builder.Prompts.choice(session, "請問您希望的老師特征?", "情緒型|理智型|意志型", { listStyle: builder.ListStyle.button });
+    },
+    function( session, results) {
+        session.dialogData.cares.feature = results.response.entity;
+        builder.Prompts.choice(session, "請問您能接受的投資風險?", "高|中|低", { listStyle: builder.ListStyle.button });
+    },
+    function(session, results) {
+        session.send('請稍等，馬上為您配對');
+        session.dialogData.cares.risk = results.response.entity;        
+        session.endDialogWithResult({
+            response:session.dialogData.cares
+        });
+    }
+])
+
+
+bot.dialog('recommend', [
+    function(session) {
+        session.send('需要為您推薦投顧老師嗎?');
+        session.beginDialog('metal_care');
+    },
+    function(session, results) {
+        cares = results.response;
+        // 把cares 設定為全域變數ai
+        session.userData.ai = cares;
+        var msg = new  builder.Message(session);
+        var attachmant = new builder.ReceiptCard(session)
+        .title("您的選擇條件")
+        .facts([
+            builder.Fact.create(session, cares.gender, "老師性別"),
+            builder.Fact.create(session, cares.feature, "老師特征"),
+            builder.Fact.create(session, cares.risk, "投資風險")
+        ])
+        msg.addAttachment(attachmant);        
+        session.endConversation(msg);
+        session.replaceDialog("fraction", {reprompt:false});
+    }    
+]).triggerAction({ matches: /^投顧老師$/ });
+
+
+bot.dialog('fraction', [
+    function(session, results) {
+        console.log(session.userData.ai)
+        if(session.userData.ai.gender == '男') {            
+            var msg = new builder.Message(session);
+            var heroCard = new builder.HeroCard(session)
+                .title("唐納·川普")
+                .subtitle("整個FinTastic都是我的嘴砲天堂！")
+                .text("只有戰爭才可以凸顯金屬的價值")
+                .images([builder.CardImage.create(session, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAe5Upa0wWAamXePPlfW0VXofOr86AIjIoWpSl0UVNIWFKgcx3PA")])
+                .buttons([
+                    builder.CardAction.openUrl(session, "https://clickme.net/39108","超狂名言")
+                ]);
+            msg.addAttachment(heroCard);
+            session.endDialog(msg);
+            session.replaceDialog('metal');
+        } else if(session.userData.ai.gender == '女') {
+            var msg = new builder.Message(session);
+            var heroCard = new builder.HeroCard(session)
+                .title("宋智孝")
+                .subtitle("整個Running Man都是我的黃金！")
+                .text("只有勝利才有金屬")
+                .images([builder.CardImage.create(session, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8glXbGlvwr5Vobct2MUIEJYacoz6WMATNobsoU5YLCWILmP69")])
+                .buttons([
+                    builder.CardAction.openUrl(session, "https://www.youtube.com/watch?v=4TnkMfAQmP0","黃金獎勵")
+                ]);
+            msg.addAttachment(heroCard);
+            session.endDialog(msg);
+            session.replaceDialog('metal');
+        } else {
+            var msg = new builder.Message(session);
+            var heroCard = new builder.HeroCard(session)
+                .title("娜美")
+                .subtitle("整個One Piece都是我的黃金天堂！")
+                .text("我只喜歡黃金跟橘子")
+                .images([builder.CardImage.create(session, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCZOaXpm8UnMtknPk39HASYBFWz2-mO_3aqa2B-cnMv0VadGMd")])
+                .buttons([
+                    builder.CardAction.openUrl(session, "https://www.youtube.com/watch?v=pATTYJ10Q9M","為黃金瘋狂")
+                ]);
+            msg.addAttachment(heroCard);
+            session.endDialog(msg);
+            session.replaceDialog('metal');
+        }
+    }
+])
