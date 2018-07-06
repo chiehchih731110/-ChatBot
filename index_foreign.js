@@ -95,56 +95,7 @@ bot.dialog('us', [
 ])
 // TODO 提供一個trigger event, 讓使用者可以回到首頁選單
 
-bot.dialog('gold', [
-    function(session, results){
-        
-        var options = {
-            method:"GET",
-            url: "https://www.quandl.com/api/v3/datasets/CME/GCZ2018.json?", 
-            // 寫在api url ?後面的參數，要放在qs(key)的Json set內
-            // qs:{
-            //     api_key="sae2Txxu_kQTHFHDxyjr"
-            // }, 
-            // 指定json格式的輸出
-            json:true
-        }
-        request(options, function (error, response, body){
-            var gold = body;
-            // 建立日期物件，放入今天的日期
-            var d = new Date();
-            // 當日期是周末，則將日期回到上個周五
-            if (d.getDay()==0)
-                d.setDate(d.getDate()-1);
-            if (d.getDay()==1)
-                d.setDate(d.getDate()-2);
-            // 將日期改成ISO規則日期的第0-10個字元 YYYY-mm-dd
-    
-            // TODO:更好的方式是用RegExpression,找出JSON檔第一筆日期的資料,可以避免節慶日找不到資料
-            
-            var tradeday = d.toISOString().slice(0, 10);
-            var getgold = gold["dataset"]["data"][0][4]
-            session.endDialog(`${tradeday} close at : $${getgold}`);
-        });
-        // TODO 讓request資料已經完成後，才執行session.replaceDialog
-        session.endConversation();
-        session.replaceDialog('gold');
-    }
-]);
-
 bot.dialog('foreign', [
-    // function (session){
-    //     builder.Prompts.text(session, "歡迎來到外匯報價所");  
-    //     //=======================回首頁按鈕===========================
-    //     var msg = new builder.Message(session);
-    //     msg.suggestedActions(builder.SuggestedActions.create(
-    //         session, [
-    //             builder.CardAction.imBack(session, "回首頁", "回首頁")
-    //         ]
-    //     ));
-    //     session.send(msg);
-    //     // ==========================================================
-    // },
-    
     function (session){
         // session.send("歡迎來到外匯報價所")
         session.send("歡迎來到外匯報價所");  
@@ -155,7 +106,9 @@ bot.dialog('foreign', [
         var msg = new builder.Message(session);
         msg.suggestedActions(builder.SuggestedActions.create(
             session, [
-                builder.CardAction.imBack(session, "回首頁", "回首頁")
+                builder.CardAction.imBack(session, "回首頁", "回首頁"),
+                builder.CardAction.imBack(session, "顯示多國貨幣", "💱顯示多國貨幣"),
+                
             ]
         ));
         session.send(msg);
@@ -197,4 +150,77 @@ bot.dialog('foreign', [
     }
     
 ])
+//=================== 列 印 我 的 最 愛 ===================
+
+bot.dialog('foreign_default',[
+    function(session){builder.Prompts.choice(session,"請問基底貨幣為?","TWD|USD|JPY|EUR|CNY|AUD",
+{listStyle:builder.ListStyle.button})
+ },
+            
+
+    function (session,results) {
+        fromCurrency = results.response.entity;
+        session.send(`![search](http://lincoln.edu.my/design_css/images/ProgressImage.gif)`)
+     //設定要查詢sheetDB的資料
+     var options = {
+        method: "GET",
+        url: "https://sheetdb.io/api/v1/5b39f01b5114f?=foreign",
+        json: true
+    };
+    
+
+
+
+    request(options, function (error, response, body) {
+        session.dialogData.fav = body;
+        session.dialogData.msg = "";
+        session.dialogData.count = 0;
+        if (!error && response.statusCode == 200) {
+            for (var i = 0; i < session.dialogData.fav.length; i++) {
+                showPrice(session.dialogData.fav[i].toCurrency,session);
+                
+            }
+        }
+    });    
+},
+
+
+]).triggerAction({ matches: /^顯示多國貨幣$/ });
+
+//============== 印 出 我 的 最 愛 的 Function ==================
+// function(session,results){builder.Prompts.choice(session,"請問預設貨幣要換成哪國貨幣?","TWD|USD|JPY|EUR|CNY|AUD",
+//     {listStyle:builder.ListStyle.button})
+//      },
+
+
+
+function showPrice(toCurrency, session) {
+    
+    var options = {
+        method: "GET",
+        url: "https://www.alphavantage.co/query",
+        qs: {
+            function: "CURRENCY_EXCHANGE_RATE",
+            from_currency: fromCurrency,
+            to_currency:toCurrency,
+            apikey: "80WQWZNQQ53A0MLK"
+        },
+        json: true
+    };
+
+
+    request(options, function (error, response, body) {
+        
+        var currency = body;
+        var ExchangeRate = currency["Realtime Currency Exchange Rate"]["5. Exchange Rate"]
+        var msg = "1元"+fromCurrency+"可換成"+ExchangeRate+"的"+toCurrency;
+        // 每次request資料近來，就加到變數 session.dialogData.msg
+        session.send(msg)
+        
+    });
+}
+
 // TODO 提供一個trigger event, 讓使用者可以回到首頁選單
+// ==================修改我的最愛====================
+
+
