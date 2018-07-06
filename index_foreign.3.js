@@ -108,7 +108,7 @@ bot.dialog('foreign', [
             session, [
                 builder.CardAction.imBack(session, "回首頁", "回首頁"),
                 builder.CardAction.imBack(session, "顯示多國貨幣", "💱顯示多國貨幣"),
-                builder.CardAction.imBack(session, "更改我的預設貨幣", "💱更改我的預設貨幣")
+                
             ]
         ));
         session.send(msg);
@@ -153,7 +153,7 @@ bot.dialog('foreign', [
 //=================== 列 印 我 的 最 愛 ===================
 
 bot.dialog('foreign_default',[
-    function(session){builder.Prompts.choice(session,"請問預設貨幣要換成哪國貨幣?","TWD|USD|JPY|EUR|CNY|AUD",
+    function(session){builder.Prompts.choice(session,"請問基底貨幣為?","TWD|USD|JPY|EUR|CNY|AUD",
 {listStyle:builder.ListStyle.button})
  },
             
