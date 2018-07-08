@@ -230,7 +230,7 @@ bot.dialog('del_favorite', [
                     //column = google試算表的欄位名稱; sheet = googe試算表的工作表名稱; returnDialog = 完成後回到哪個dialog 
                     session.dialogData.isinside = true;
                     deleteToSheetDB(session.dialogData.delTicker.toUpperCase(), column="usticker", sheet="us", returnDialog="us", session);
-                    break; 
+                    break;
                 }
             };
             if (session.dialogData.isinside==false){

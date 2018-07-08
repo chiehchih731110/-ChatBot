@@ -37,17 +37,17 @@ bot.dialog('mainMenu', [
     function (session, results) {
         session.dialogData.ask = results.response.entity;
         if (session.dialogData.ask == "美股")
-            session.replaceDialog('us');        
+            session.replaceDialog('us');
         else if (session.dialogData.ask == "黃金")
-            session.replaceDialog('gold'); 
-            else if (session.dialogData.ask == "匯率")
-            session.replaceDialog('foreign'); 
+            session.replaceDialog('gold');
+        else if (session.dialogData.ask == "匯率")
+            session.replaceDialog('foreign');
         // TODO 加入每個人寫的功能
     }
 ]).triggerAction({ matches: /^回首頁$/ });
 
 bot.dialog('us', [
-    function(session){
+    function (session) {
         builder.Prompts.text(session, "請輸入美股Ticker:");
         //=======================回首頁按鈕===========================
         var msg = new builder.Message(session);
@@ -59,7 +59,7 @@ bot.dialog('us', [
         session.send(msg);
         // ==========================================================
     },
-    function(session, results){
+    function (session, results) {
         var id = results.response;
         var options = {
             method: "GET",
@@ -96,36 +96,36 @@ bot.dialog('us', [
 // TODO 提供一個trigger event, 讓使用者可以回到首頁選單
 
 bot.dialog('foreign', [
-    function (session){
+    function (session) {
         // session.send("歡迎來到外匯報價所")
-        session.send("歡迎來到外匯報價所");  
-        
-        builder.Prompts.choice(session,"請問手上有什麼貨幣?","TWD|USD|JPY|EUR|CNY|AUD",
-        {listStyle:builder.ListStyle.button})
+        session.send("歡迎來到外匯報價所");
+
+        builder.Prompts.choice(session, "請問手上有什麼貨幣?", "TWD|USD|JPY|EUR|CNY|AUD",
+            { listStyle: builder.ListStyle.button })
         //=======================回首頁按鈕===========================
         var msg = new builder.Message(session);
         msg.suggestedActions(builder.SuggestedActions.create(
             session, [
                 builder.CardAction.imBack(session, "回首頁", "回首頁"),
-                builder.CardAction.imBack(session, "顯示多國貨幣", "💱顯示多國貨幣"),
-                
+                builder.CardAction.imBack(session, "顯示多國貨幣", "💱顯示"+FROMCURRENCY+"兌換多國貨幣"),
+                builder.CardAction.imBack(session, "修改預設貨幣", "💱修改預設貨幣"),
             ]
         ));
         session.send(msg);
         // ==========================================================
     },
-    function(session,results){
+    function (session, results) {
         // 取得要輸入from_currency的資料
-        session.dialogData.fid = results.response.entity;
-        builder.Prompts.choice(session,"請問要換成哪國貨幣?","TWD|USD|JPY|EUR|CNY|AUD",
-        {listStyle:builder.ListStyle.button});
-       
-    },
-    function(session,results){
-        
-        // 取得要輸入to_currency的資料
         session.dialogData.tid = results.response.entity;
-        
+        builder.Prompts.choice(session, "請問要換成哪國貨幣?", "TWD|USD|JPY|EUR|CNY|AUD",
+            { listStyle: builder.ListStyle.button });
+
+    },
+    function (session, results) {
+
+        // 取得要輸入to_currency的資料
+        session.dialogData.fid = results.response.entity;
+
         var options = {
             method: "GET",
             url: "https://www.alphavantage.co/query",
@@ -135,54 +135,48 @@ bot.dialog('foreign', [
                 from_currency: session.dialogData.fid,
                 to_currency: session.dialogData.tid,
                 apikey: "80WQWZNQQ53A0MLK"
-                },
+            },
             //指定json格式的輸出
             json: true
-                       } 
-        
+        }
+
         request(options, function (error, response, body) {
             var currency = body;
             var ExchangeRate = currency["Realtime Currency Exchange Rate"]["5. Exchange Rate"]
-            session.endDialog(`1元${session.dialogData.fid}可兌換成$${ExchangeRate}元的${session.dialogData.tid}`);
+            session.endDialog(`1元${session.dialogData.tid}可兌換成$${ExchangeRate}元的${session.dialogData.fid}`);
             session.replaceDialog('foreign');
         });
-        
+
     }
-    
+
 ])
 //=================== 列 印 我 的 最 愛 ===================
 
-bot.dialog('foreign_default',[
-    function(session){builder.Prompts.choice(session,"請問基底貨幣為?","TWD|USD|JPY|EUR|CNY|AUD",
-{listStyle:builder.ListStyle.button})
- },
-            
-
-    function (session,results) {
-        fromCurrency = results.response.entity;
+bot.dialog('foreign_default', [
+    function (session) {
         session.send(`![search](http://lincoln.edu.my/design_css/images/ProgressImage.gif)`)
-     //設定要查詢sheetDB的資料
-     var options = {
-        method: "GET",
-        url: "https://sheetdb.io/api/v1/5b39f01b5114f?=foreign",
-        json: true
-    };
-    
+        //設定要查詢sheetDB的資料
+        var options = {
+            method: "GET",
+            url: "https://sheetdb.io/api/v1/5b39f01b5114f?=foreign",
+            json: true
+        };
+        request(options, function (error, response, body) {
+            // session.dialogData.fav[i].fromCurrency=
+            session.dialogData.fav = body;
+            console.log(body)
+            FROMCURRENCY=body[0].fromCurrency
+            session.dialogData.msg = "";
+            session.dialogData.count = 0;
+            if (!error && response.statusCode == 200) {
+                for (var i = 0; i < session.dialogData.fav.length; i++) {
+                    // showPrice(session.dialogData.fav[i].fromCurrency,session);
+                    showPrice(session.dialogData.fav[i].toCurrency, session);
 
-
-
-    request(options, function (error, response, body) {
-        session.dialogData.fav = body;
-        session.dialogData.msg = "";
-        session.dialogData.count = 0;
-        if (!error && response.statusCode == 200) {
-            for (var i = 0; i < session.dialogData.fav.length; i++) {
-                showPrice(session.dialogData.fav[i].toCurrency,session);
-                
+                }
             }
-        }
-    });    
-},
+        });
+    },
 
 
 ]).triggerAction({ matches: /^顯示多國貨幣$/ });
@@ -195,32 +189,81 @@ bot.dialog('foreign_default',[
 
 
 function showPrice(toCurrency, session) {
-    
-    var options = {
-        method: "GET",
-        url: "https://www.alphavantage.co/query",
-        qs: {
-            function: "CURRENCY_EXCHANGE_RATE",
-            from_currency: fromCurrency,
-            to_currency:toCurrency,
-            apikey: "80WQWZNQQ53A0MLK"
-        },
-        json: true
-    };
+    // var options = {
+    //     method: "GET",
+    //     url: "https://sheetdb.io/api/v1/5b39f01b5114f?=foreign",
+        
+    //     from_currency: fromCurrency,
+        
+    //     json: true
+    // };
+        var options = {
+            method: "GET",
+            url: "https://www.alphavantage.co/query",
+            qs: {
+                function: "CURRENCY_EXCHANGE_RATE",
+                from_currency: toCurrency,
+                to_currency: FROMCURRENCY,
+                apikey: "80WQWZNQQ53A0MLK"
+            },
+            json: true
+        };
 
 
-    request(options, function (error, response, body) {
-        
-        var currency = body;
-        var ExchangeRate = currency["Realtime Currency Exchange Rate"]["5. Exchange Rate"]
-        var msg = "1元"+fromCurrency+"可換成"+ExchangeRate+"的"+toCurrency;
-        // 每次request資料近來，就加到變數 session.dialogData.msg
-        session.send(msg)
-        
-    });
+        request(options, function (error, response, body) {
+            // console.log("456123"+toCurrency)
+            var currency = body;
+
+            var ExchangeRate = currency["Realtime Currency Exchange Rate"]["5. Exchange Rate"]
+            var msg = "1元"+FROMCURRENCY+"可換成" + ExchangeRate + "的"+ toCurrency ;
+            // 每次request資料近來，就加到變數 session.dialogData.msg
+            session.dialogData.msg += msg + "\r\n";
+            // 每次request資料近來，就紀錄(已完成的次數+1)
+            session.dialogData.count += 1;
+            // session.send(msg)
+            if (session.dialogData.count == session.dialogData.fav.length &&FROMCURRENCY!=toCurrency) {
+                session.send(session.dialogData.msg)
+                session.replaceDialog('foreign');
+
+            } else {
+                
+            }
+        });
+    // })
 }
 
 // TODO 提供一個trigger event, 讓使用者可以回到首頁選單
 // ==================修改我的最愛====================
+bot.dialog('foreign_update', [
+    function(session){
+        builder.Prompts.choice(session, "請問要換成哪國貨幣?", "TWD|USD|JPY|EUR|CNY|AUD",
+    { listStyle: builder.ListStyle.button });
+    },
+    function(session,results){
+        session.dialogData.update = results.response.entity;
+        console.log(FROMCURRENCY)
+        var options = {
+        uri: 'https://sheetdb.io/api/v1/5b39f01b5114f/fromCurrency/'+FROMCURRENCY,
+        json: true,
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: {"data":{"fromCurrency":session.dialogData.update}}
+        };
+        request(options)
+        session.replaceDialog('foreign');
+    }
+    
+    // https://sheetdb.io/api/v1/58f61be4dda40/{column}/{value}
+]).triggerAction({ matches: /^修改預設貨幣$/ });
 
-
+var options = {
+    method: "GET",
+    url: "https://sheetdb.io/api/v1/5b39f01b5114f?=foreign",
+    json: true
+};
+request(options, function (error, response, body) {
+    console.log(body)
+    FROMCURRENCY=body[0].fromCurrency
+    
+});
+// 
