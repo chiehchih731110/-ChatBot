@@ -2,6 +2,7 @@
 var restify = require("restify");
 var builder = require("botbuilder");
 var request = require("request");
+var sleep = require('system-sleep');
 
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || "3978", function () {
@@ -95,15 +96,22 @@ bot.dialog('us', [
         session.send(msg);
         // ==========================================================
     },
-    function (session, results) {
-        var id = results.response;
+    function(session, results) {
+        session.dialogData.id = results.response;
+        //呼叫函式取得股價圖
+        charturl(session.dialogData.id, session);
+        console.log("imageurl===back==="+session.dialogData.imageurl);
+    // },
+    // function(session){
+        sleep(1000);
+        console.log("====enter next function===");
+        //使用alphavantage的股價API取得價格資料
         var options = {
             method: "GET",
             url: "https://www.alphavantage.co/query",
-            //寫在api url ?後面的參數，要放在qs(key)的Json set內
             qs: {
                 function: "TIME_SERIES_DAILY",
-                symbol: id,
+                symbol: session.dialogData.id,
                 apikey: "2C8MUXABNVMED4DS"
             },
             //指定json格式的輸出
@@ -111,6 +119,7 @@ bot.dialog('us', [
         };
         request(options, function (error, response, body) {
             var stock = body;
+            console.log("=======stock:"+stock);
             if (stock["Time Series (Daily)"]) {
                 //用RegExpression, 找出JSON檔第一筆日期的資料，可以避免節慶日找不到資料
                 // var date = JSON.stringify(stock["Time Series (Daily)"]).match(/\d{4}-\d{2}-\d{2}/);
@@ -121,8 +130,20 @@ bot.dialog('us', [
                 var low = parseFloat(stock["Time Series (Daily)"][date[0]]["3. low"]).toFixed(2)
                 var close = parseFloat(stock["Time Series (Daily)"][date[0]]["4. close"]).toFixed(2)
                 var change = parseFloat(stock["Time Series (Daily)"][date[0]]["4. close"]-stock["Time Series (Daily)"][date[1]]["4. close"]).toFixed(2)
+                if (change >0) var changesign=" 🔺"
+                if (change <0) var changesign=" 🔻"
                 var changePercent = parseFloat((stock["Time Series (Daily)"][date[0]]["4. close"]-stock["Time Series (Daily)"][date[1]]["4. close"])/stock["Time Series (Daily)"][date[1]]["4. close"]*100).toFixed(2)
-                session.send(`${id.toUpperCase()} : ${date[0]} \nopen $${open}\nhigh $${high}\nlow $${low}\nclose $${close}\nchange $${change}\npercent ${changePercent}%`);
+                
+                //建立一個HeroCard
+                var msg = new builder.Message(session);
+                var heroCard = new builder.HeroCard(session)
+                    .title(session.dialogData.id.toUpperCase()+" $"+close+changesign+"$"+change+" "+changePercent+"%")
+                    .subtitle(date[0])
+                    .text(`open $${open}\thigh $${high}\tlow $${low}`)
+                    // .text("open $"+open+"\n\n high $"+high+"\n\n low $"+low+"\n\n close $"+close+"\n\n change $"+change+"\n\n %"+changePercent)
+                    .images([builder.CardImage.create(session, session.dialogData.imageurl)])
+                msg.addAttachment(heroCard);
+                session.send(msg);
                 session.replaceDialog('us');
             } else {
                 session.send(`沒有找到這個股票!`);
@@ -131,6 +152,24 @@ bot.dialog('us', [
         });
     }
 ])
+
+//================== request aicoco API 股價圖 ===================
+function charturl(id, session){
+    //透過aicoco API取得股票價格的縮圖
+    var options = {
+        method: "GET",
+        url: "http://localhost:8000/chart/us/",
+        //寫在api url ?後面的參數，要放在qs(key)的Json set內
+        qs: {
+            ticker: id
+        },
+    };
+    request(options, function(error, response, body) {
+        session.dialogData.imageurl = body;
+        console.log("======imageurl before send====="+session.dialogData.imageurl); 
+    });
+    return
+}
 
 //===================(us) 列 印 我 的 最 愛 ===================
 bot.dialog('us_favorite', [
@@ -230,7 +269,7 @@ bot.dialog('del_favorite', [
                     //column = google試算表的欄位名稱; sheet = googe試算表的工作表名稱; returnDialog = 完成後回到哪個dialog 
                     session.dialogData.isinside = true;
                     deleteToSheetDB(session.dialogData.delTicker.toUpperCase(), column="usticker", sheet="us", returnDialog="us", session);
-                    break;
+                    break; 
                 }
             };
             if (session.dialogData.isinside==false){
@@ -242,52 +281,13 @@ bot.dialog('del_favorite', [
 ]).triggerAction({ matches: /^刪除最愛$/ });
 // #endregion ======美股結束=============================
 
-// 金屬
-bot.dialog('metal', [
+bot.dialog('aicongo', [
     function (session) {
-        session.send('![FinTasticLogo](https://gudywedding.com.tw/wp-content/uploads/2018/07/fintastic_logo300x61.jpg)');
-        builder.Prompts.choice(session, "請選擇您想知道的金屬？", "GC|HG|SI|PL|PA", { listStyle: builder.ListStyle.button });
-        
-        // TODO 提供一個trigger event, 讓使用者可以回到首頁選單
-        //=======================回首頁按鈕===========================
-        var msg = new builder.Message(session);
-        msg.suggestedActions(builder.SuggestedActions.create(
-            session, [
-                builder.CardAction.imBack(session, "回首頁", "回首頁"),
-                builder.CardAction.imBack(session, "我的最愛", "我的最愛"),
-                builder.CardAction.imBack(session, "新增最愛", "新增最愛"),
-                builder.CardAction.imBack(session, "刪除最愛", "刪除最愛")
-            ]
-        ));
-        session.send(msg);
-        // ==========================================================
-    },
-    function (session, results) {
-        var metal_name = results.response.entity;
-        // 利用選擇的Name完成API
-        var metal_url = "https://www.quandl.com/api/v3/datasets/CHRIS/CME_" + metal_name + "1.json";
-        var options = {
-        method: "GET",
-        url: metal_url,
-        // 寫在api url ?後面的參數，要放在qs(key)的Json set內
-        qs:{
-            api_key:"sae2Txxu_kQTHFHDxyjr"
-        }, 
-        // 指定json格式的輸出
-        json: true
-        }
-        request(options, function (error, response, body) {
-            var m_body = body;
-            // TODO:用RegExpression,找出JSON檔第一筆日期的資料,可以避免節慶日找不到資料
-            // var getDate = JSON.stringify(gold["dataset"]["data"][0]).match(/\d{4}-\d{2}-\d{2}/);
-            var getDate = m_body["dataset"]["data"][0][0];
-            var getOpen = m_body["dataset"]["data"][0][1];
-            var getHigh = m_body["dataset"]["data"][0][2];
-            var getLow  = m_body["dataset"]["data"][0][3];
-            var getLast = m_body["dataset"]["data"][0][4];
-            session.endDialog(`Name ${metal_name} \nDate ${getDate} \nopen $${getOpen} \nhigh $${getHigh} \nlow $${getLow} \nLast $${getLast}`);
-            session.replaceDialog('metal');
-            // TODO 讓request資料已經完成後，才執行session.replaceDialog
-        });
-    }
-]);
+        session.send('![congo](http://localhost:8000/static/images/congo.gif)')
+        session.send("**===== 剛 果 機 器 學 習 中 =====**");
+        sleep(5000)
+        session.send('![explode](http://localhost:8000/static/images/explode.gif)')
+        session.send("**========= 機 器 爆 炸 =========**");
+        session.replaceDialog('')
+    }]).triggerAction({ matches: /^剛果機器學習$/});
+
