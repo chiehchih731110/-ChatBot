@@ -56,6 +56,7 @@ function addToSheetDB(ticker, column, sheet, returnDialog, session) {
         body: {"data": body_data}
     }, function (error, response, body) {
         if (!error && response.statusCode == 201) {
+            
             session.send(ticker+"儲存成功");
             session.replaceDialog(returnDialog);
         } else {
@@ -67,13 +68,15 @@ function addToSheetDB(ticker, column, sheet, returnDialog, session) {
 //=========== function 刪除Ticker sheetDB =================
 function deleteToSheetDB(ticker, column, sheet, returnDialog, session) {
     request({
+            
         // 設定要加入到SheetDB的欄位名(colume), 與儲存內容(ticker)
-        uri: 'https://sheetdb.io/api/v1/5b3b454109706/'+column +'/'+ ticker +'?sheet='+ sheet,
+        uri: 'https://sheetdb.io/api/v1/5b3b454109706/'+column +'/'+ticker +'?sheet='+ sheet,
         json: true,
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
     }, function (error, response, body) {
         if (!error && response.statusCode == 200) {
+             
             session.send(ticker+"刪除成功");
             session.replaceDialog(returnDialog);
         } else {
@@ -175,7 +178,10 @@ function showPrice(hkticker, session) {
             var date = JSON.stringify(stock["dataset"]["data"][0][0]).match(/\d{4}-\d{2}-\d{2}/);
             
             var close = stock["dataset"]["data"][0][9]  
-            var msg = "股票號碼"+hkticker.toUpperCase() +"日期"                                                                                                                                                                                                                                                                                                                                                                                                                                       +date+ " close $" + close;    
+            if(hkticker<10){
+                k="0000"+hkticker;
+            }else{k="000"+hkticker}
+            var msg = "股票號碼"+k.toUpperCase() +"日期"                                                                                                                                                                                                                                                                                                                                                                                                                                       +date+ " close $" + close;    
             // 每次request資料近來，就加到變數 session.dialogData.msg
             session.dialogData.msg += msg+"\n";
             // 每次request資料近來，就紀錄(已完成的次數+1)
@@ -213,6 +219,7 @@ bot.dialog('del_favorite', [
     },
     function (session, results) {
         session.dialogData.delTicker = results.response;
+                       
         //先查詢Ticker是否存在sheetDB
         var options = {
             method: "GET",
@@ -230,7 +237,7 @@ bot.dialog('del_favorite', [
                     //column = google試算表的欄位名稱; sheet = googe試算表的工作表名稱; returnDialog = 完成後回到哪個dialog 
                     
                     session.dialogData.isinside = true;
-                    deleteToSheetDB(session.dialogData.delTicker.toUpperCase(), column="hkticker", sheet="hkstock", returnDialog="hkstock1", session);
+                    deleteToSheetDB(session.dialogData.delTicker, column="hkticker", sheet="hkstock", returnDialog="hkstock1", session);
                     console.log(session.dialogData.delTicker.toUpperCase())
                     break; 
                 }
