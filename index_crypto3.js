@@ -42,7 +42,7 @@ bot.dialog('mainMenu', [
 // #endregion 首頁
 // #region 共用的sheetDB function 勿改!!===============
 //=========== function 新增Ticker sheetDB =================
-function addToSheetDB(ticker, column, sheet, returnDialog, session) {
+function addcryptoToSheetDB(ticker, column, sheet, returnDialog, session) {
     // 設定要加入到SheetDB的欄位名(colume), 與儲存內容(ticker)
     var body_data = `[{"${column}" : "${ticker}"}]`;
     request({
@@ -62,7 +62,7 @@ function addToSheetDB(ticker, column, sheet, returnDialog, session) {
 }
 
 //=========== function 刪除Ticker sheetDB =================
-function deleteToSheetDB(ticker, column, sheet, returnDialog, session) {
+function deletecryptoToSheetDB(ticker, column, sheet, returnDialog, session) {
     request({
         // 設定要加入到SheetDB的欄位名(colume), 與儲存內容(ticker)
         uri: 'https://sheetdb.io/api/v1/5b3a27beea7a1/' + column + '/' + ticker + '?sheet=' + sheet,
@@ -79,60 +79,6 @@ function deleteToSheetDB(ticker, column, sheet, returnDialog, session) {
     });
 }
 // #endregion =====sheetDB====================================================
-// #region ===================== (us) 美 股 首 頁 ==============================
-bot.dialog('us', [
-    function (session) {
-        builder.Prompts.text(session, "請輸入美股Ticker:");
-        //=======================推 薦 按 鈕===========================
-        var msg = new builder.Message(session);
-        msg.suggestedActions(builder.SuggestedActions.create(
-            session, [
-                builder.CardAction.imBack(session, "首頁", "🏠首頁"),
-                builder.CardAction.imBack(session, "我的最愛", "💖我的最愛"),
-                builder.CardAction.imBack(session, "新增最愛", "📁新增最愛"),
-                builder.CardAction.imBack(session, "刪除最愛", "🗑️刪除最愛")
-            ]
-        ));
-        session.send(msg);
-        // ==========================================================
-    },
-    function (session, results) {
-        var id = results.response;
-        var options = {
-            method: "GET",
-            url: "https://www.alphavantage.co/query",
-            //寫在api url ?後面的參數，要放在qs(key)的Json set內
-            qs: {
-                function: "TIME_SERIES_DAILY",
-                symbol: id,
-                apikey: "2C8MUXABNVMED4DS"
-            },
-            //指定json格式的輸出
-            json: true
-        };
-        request(options, function (error, response, body) {
-            var stock = body;
-            if (stock["Time Series (Daily)"]) {
-                //用RegExpression, 找出JSON檔第一筆日期的資料，可以避免節慶日找不到資料
-                // var date = JSON.stringify(stock["Time Series (Daily)"]).match(/\d{4}-\d{2}-\d{2}/);
-                var date = JSON.stringify(stock["Time Series (Daily)"]).match(/\d{4}-\d{2}-\d{2}/g);
-                //parseFloat 將文字改成Float type, toFixed(2)將數字縮到小數點2位數
-                var open = parseFloat(stock["Time Series (Daily)"][date[0]]["1. open"]).toFixed(2)
-                var high = parseFloat(stock["Time Series (Daily)"][date[0]]["2. high"]).toFixed(2)
-                var low = parseFloat(stock["Time Series (Daily)"][date[0]]["3. low"]).toFixed(2)
-                var close = parseFloat(stock["Time Series (Daily)"][date[0]]["4. close"]).toFixed(2)
-                var change = parseFloat(stock["Time Series (Daily)"][date[0]]["4. close"] - stock["Time Series (Daily)"][date[1]]["4. close"]).toFixed(2)
-                var changePercent = parseFloat((stock["Time Series (Daily)"][date[0]]["4. close"] - stock["Time Series (Daily)"][date[1]]["4. close"]) / stock["Time Series (Daily)"][date[1]]["4. close"] * 100).toFixed(2)
-                session.send(`${id.toUpperCase()} : ${date[0]} \nopen $${open}\nhigh $${high}\nlow $${low}\nclose $${close}\nchange $${change}\npercent ${changePercent}%`);
-                session.replaceDialog('us');
-            } else {
-                session.send(`沒有找到這個股票!`);
-                session.replaceDialog('us');
-            }
-        });
-    }
-])
-// #endregion +++++++++++++
 
 // #region ===================== Crypto 加 密 貨 幣==============================
 bot.dialog('crypto', [
@@ -235,21 +181,21 @@ function showPrice(tickers, session) {
 
 
 //============= 新 增 加 密 貨 幣 到 我 的 最 愛 ===============
-bot.dialog('add_favorite', [
+bot.dialog('addcrypto_favorite', [
     function (session) {
         builder.Prompts.text(session, "請輸入要新增的加密貨幣:");
     },
     function (session, results) {
         session.dialogData.addTicker = results.response;
-        //呼叫addToSheetDB function, 將收到的Ticker存入sheetDB, 
+        //呼叫addcryptoToSheetDB function, 將收到的Ticker存入sheetDB, 
         //column = google試算表的欄位名稱; sheet = googe試算表的工作表名稱; returnDialog = 完成後回到哪個dialog
-        addToSheetDB(session.dialogData.addTicker.toUpperCase(), column = "coin_ticker", sheet = "coin", returnDialog = "crypto", session);
+        addcryptoToSheetDB(session.dialogData.addTicker.toUpperCase(), column = "coin_ticker", sheet = "coin", returnDialog = "crypto", session);
     }
 ]).triggerAction({ matches: /^新增最愛$/ });
 
 
 //================ 刪 除 我 的 最 愛 股 票 =================
-bot.dialog('del_favorite', [
+bot.dialog('delcrypto_favorite', [
     function (session) {
         builder.Prompts.text(session, "請輸入要刪除的加密貨幣:");
     },
@@ -268,10 +214,10 @@ bot.dialog('del_favorite', [
             // 檢查要刪除的Ticker 是否在sheetDB內(我的最愛), 如果有就刪除Ticker, 沒有就回錯誤訊息
             for (var i = 0; i < session.dialogData.myFav.length; i++) {
                 if (session.dialogData.myFav[i].coin_ticker == session.dialogData.delTicker.toUpperCase()) {
-                    //呼叫deleteToSheetDB function, 將收到的Ticker從sheetDB刪除
+                    //呼叫deletecryptoToSheetDB function, 將收到的Ticker從sheetDB刪除
                     //column = google試算表的欄位名稱; sheet = googe試算表的工作表名稱; returnDialog = 完成後回到哪個dialog 
                     session.dialogData.isinside = true;
-                    deleteToSheetDB(session.dialogData.delTicker.toUpperCase(), column = "coin_ticker", sheet = "coin", returnDialog = "crypto", session);
+                    deletecryptoToSheetDB(session.dialogData.delTicker.toUpperCase(), column = "coin_ticker", sheet = "coin", returnDialog = "crypto", session);
                     break;
                 }
             };

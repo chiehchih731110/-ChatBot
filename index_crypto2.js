@@ -42,7 +42,7 @@ bot.dialog('mainMenu', [
 // #endregion 首頁
 // #region 共用的sheetDB function 勿改!!===============
 //=========== function 新增Ticker sheetDB =================
-function addToSheetDB(ticker, column, sheet, returnDialog, session) {
+function addcrypto1ToSheetDB(ticker, column, sheet, returnDialog, session) {
     // 設定要加入到SheetDB的欄位名(colume), 與儲存內容(ticker)
     var body_data = `[{"${column}" : "${ticker}"}]`;
     request({
@@ -62,7 +62,7 @@ function addToSheetDB(ticker, column, sheet, returnDialog, session) {
 }
 
 //=========== function 刪除Ticker sheetDB =================
-function deleteToSheetDB(ticker, column, sheet, returnDialog, session) {
+function deletecrypto1ToSheetDB(ticker, column, sheet, returnDialog, session) {
     request({
         // 設定要加入到SheetDB的欄位名(colume), 與儲存內容(ticker)
         uri: 'https://sheetdb.io/api/v1/5b3a27beea7a1/'+column +'/'+ ticker +'?sheet='+ sheet,
@@ -123,7 +123,7 @@ bot.dialog('us', [
                 var close = parseFloat(stock["Time Series (Daily)"][date[0]]["4. close"]).toFixed(2)
                 var change = parseFloat(stock["Time Series (Daily)"][date[0]]["4. close"]-stock["Time Series (Daily)"][date[1]]["4. close"]).toFixed(2)
                 var changePercent = parseFloat((stock["Time Series (Daily)"][date[0]]["4. close"]-stock["Time Series (Daily)"][date[1]]["4. close"])/stock["Time Series (Daily)"][date[1]]["4. close"]*100).toFixed(2)
-                session.send(`${id.toUpperCase()} : ${date[0]} \nopen $${open}\nhigh $${high}\nlow $${low}\nclose $${close}\nchange $${change}\npercent ${changePercent}%`);
+                session.send(`${id.toUpperCase()} : ${date[0]}  open $${open} high $${high} low $${low} close $${close} change $${change} percent ${changePercent}%`);
                 session.replaceDialog('us');
             } else {
                 session.send(`沒有找到這個股票!`);
@@ -153,7 +153,7 @@ bot.dialog('crypto0', [
                     var coin = body;
                     if(coin){
                         session.endDialog(
-                            `今日熱門貨幣價格如下:<br>比特幣\n:\nUSD:\n${coin.BTC.USD}\n,\nNTD:\n${coin.BTC.TWD}<br>以太幣\n:\nUSD:\n${coin.ETH.USD}\n,\nNTD:\n${coin.ETH.TWD}<br>瑞波幣\n:\nUSD:\n${coin.XRP.USD}\n,\nNTD:\n${coin.XRP.TWD}<br>門羅幣\n:\nUSD:\n${coin.XMR.USD}\n,\nNTD:\n${coin.XMR.TWD}<br>🐕狗幣:\nUSD:\n${coin.DOGE.USD}\n,\nNTD:\n${coin.DOGE.TWD}<br>
+                            `今日熱門貨幣價格如下:<br>比特幣:USD: ${coin.BTC.USD} , NTD: ${coin.BTC.TWD}<br>以太幣 : USD: ${coin.ETH.USD} , NTD: ${coin.ETH.TWD}<br>瑞波幣 : USD: ${coin.XRP.USD} , NTD: ${coin.XRP.TWD}<br>門羅幣 : USD: ${coin.XMR.USD} , NTD: ${coin.XMR.TWD}<br>🐕狗幣: USD: ${coin.DOGE.USD} , NTD: ${coin.DOGE.TWD}<br>
                             `
                         )
                        
@@ -267,7 +267,7 @@ function showPrice(tickers, session) {
         if (coin) {
             for (var i = 0; i < session.dialogData.fav.length; i++) {
                 ticker = session.dialogData.fav[i].coin_ticker;
-                msg += ticker+"\n:\nUSD\n:\n"+ coin[ticker].USD + "\n,新台幣\n:\n" + coin[ticker].TWD + "\n\n";
+                msg += ticker+" : USD : "+ coin[ticker].USD + " ,新台幣 : " + coin[ticker].TWD + "<br>";
             }
             session.send(msg);
             session.replaceDialog('crypto1');
@@ -280,21 +280,21 @@ function showPrice(tickers, session) {
 
 
 //============= 新 增 加密貨幣 到 我 的 最 愛 ===============
-bot.dialog('add_favorite', [
+bot.dialog('addcrypto1_favorite', [
     function (session) {
         builder.Prompts.text(session, "請輸入要新增的加密貨幣:");
     },
     function (session, results) {
         session.dialogData.addTicker = results.response;
-        //呼叫addToSheetDB function, 將收到的Ticker存入sheetDB, 
+        //呼叫addcrypto1ToSheetDB function, 將收到的Ticker存入sheetDB, 
         //column = google試算表的欄位名稱; sheet = googe試算表的工作表名稱; returnDialog = 完成後回到哪個dialog
-        addToSheetDB(session.dialogData.addTicker.toUpperCase(), column="coin_ticker", sheet="coin", returnDialog="crypto1", session);
+        addcrypto1ToSheetDB(session.dialogData.addTicker.toUpperCase(), column="coin_ticker", sheet="coin", returnDialog="crypto1", session);
     }
 ]).triggerAction({ matches: /^新增最愛$/ });
 
 
 //================ 刪 除 我 的 最 愛 股 票 =================
-bot.dialog('del_favorite', [
+bot.dialog('delcrypto1_favorite', [
     function (session) {
         builder.Prompts.text(session, "請輸入要刪除的加密貨幣:");
     },
@@ -313,10 +313,10 @@ bot.dialog('del_favorite', [
             // 檢查要刪除的Ticker 是否在sheetDB內(我的最愛), 如果有就刪除Ticker, 沒有就回錯誤訊息
             for (var i =0; i<session.dialogData.myFav.length; i++){
                 if (session.dialogData.myFav[i].coin_ticker == session.dialogData.delTicker.toUpperCase()){
-                    //呼叫deleteToSheetDB function, 將收到的Ticker從sheetDB刪除
+                    //呼叫deletecrypto1ToSheetDB function, 將收到的Ticker從sheetDB刪除
                     //column = google試算表的欄位名稱; sheet = googe試算表的工作表名稱; returnDialog = 完成後回到哪個dialog 
                     session.dialogData.isinside = true;
-                    deleteToSheetDB(session.dialogData.delTicker.toUpperCase(), column="coin_ticker", sheet="coin", returnDialog="crypto0", session);
+                    deletecrypto1ToSheetDB(session.dialogData.delTicker.toUpperCase(), column="coin_ticker", sheet="coin", returnDialog="crypto0", session);
                     break; 
                 }
             };
