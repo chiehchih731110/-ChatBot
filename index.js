@@ -342,8 +342,9 @@ function showMetalPrice(MetalName, session) {
         // 每次request資料近來，就紀錄(已完成的次數+1)
         session.dialogData.count += 1;
         if(session.dialogData.count == session.dialogData.fav.length)
-        {
-            session.send(session.dialogData.msg);
+        {            
+            session.send(`![love](https://media.giphy.com/media/cfNAQrzAai2BO/giphy.gif)`)       
+            session.send(session.dialogData.msg);     
             session.replaceDialog('metal');
         }
         // session.endDialog(`${MetalName} ${getDate} Last $${getLast}`);
@@ -360,7 +361,6 @@ bot.dialog('metal_add_favorite', [
     function (session, results) {
         session.dialogData.addus = results.response;
         addToMetalSheetDB(session.dialogData.addus, session);
-
     }
 ]).triggerAction({ matches: /^新增最愛金屬$/ });
 
@@ -391,6 +391,7 @@ function addToMetalSheetDB(MetalName, session) {
         }
     }, function (error, response, body) {
         if (!error && response.statusCode == 201) {
+            session.send(`![love](https://media.giphy.com/media/n9g2gNXNN3jYk/giphy.gif)`)            
             session.send("儲存成功");
             session.replaceDialog('metal');
         } else {
@@ -538,13 +539,12 @@ bot.dialog('crypto1', [
                 session.replaceDialog('crypto1')
             }else{
                 session.endDialog(`沒有找到這個加密貨幣!`)
+                session.send(`![no](https://media.giphy.com/media/xThtan8ODW9GNooAIE/giphy.gif)`)
                 session.replaceDialog('crypto1')
             }
         });
     }
 ])
-
-
 
 //===================(us) 列 印 我 的 最 愛 ===================
 bot.dialog('crypto_favorite', [
@@ -604,7 +604,6 @@ function showcrypto1Price(tickers, session) {
     });
 }
 
-
 //============= 新 增 加密貨幣 到 我 的 最 愛 ===============
 bot.dialog('addcrypto1_favorite', [
     function (session) {
@@ -617,7 +616,6 @@ bot.dialog('addcrypto1_favorite', [
         addcrypto1ToSheetDB(session.dialogData.addTicker.toUpperCase(), column="coin_ticker", sheet="coin", returnDialog="crypto1", session);
     }
 ]).triggerAction({ matches: /^新增最愛貨幣$/ });
-
 
 //================ 刪 除 我 的 最 愛 股 票 =================
 bot.dialog('delcrypto1_favorite', [
@@ -655,7 +653,6 @@ bot.dialog('delcrypto1_favorite', [
 ]).triggerAction({ matches: /^刪除最愛貨幣$/ });
 // #endregion ======美股結束=============================
 
-
 function addToeuroSheetDB(euroName, session) {
     console.log("addToeuroSheetDB" + euroName);
     request({
@@ -678,6 +675,7 @@ function addToeuroSheetDB(euroName, session) {
     });
 }
 //=========== function 刪除Ticker sheetDB =================
+
 function deleteToeuroSheetDB(euroName, session) {
     request({
         // 設定要加入到SheetDB的欄位名(colume), 與儲存內容(ticker)
@@ -694,8 +692,6 @@ function deleteToeuroSheetDB(euroName, session) {
         }
     });
 }
-
-
 
 bot.dialog('euro', [
     function (session) {
@@ -741,6 +737,7 @@ bot.dialog('euro', [
                 session.replaceDialog('euro');
             }else {
                 session.send(`沒有找到這個股票!`);
+                session.send(`![no](https://media.giphy.com/media/l4HocPQcNLsi0erbq/giphy.gif)`)
                 session.replaceDialog('euro');
             }
         });
@@ -821,7 +818,6 @@ bot.dialog('deleuro_favorite', [
     }
 ]).triggerAction({ matches: /^刪除最愛歐股$/ });
 // #endregion ======美股結束=============================
-
 
 function addtwToSheetDB(ticker, column, sheet, returnDialog, session) {
     // 設定要加入到SheetDB的欄位名(colume), 與儲存內容(ticker)
@@ -937,7 +933,6 @@ bot.dialog('tw_favorite', [
     }
 ]).triggerAction({ matches: /^我的最愛台股$/ });
 
-
 //============== 印 出 我 的 最 愛 的 Function ==================
 function showtwPrice(twticker, session) {
     var options = {
@@ -977,7 +972,6 @@ function showtwPrice(twticker, session) {
     });
 }
 
-
 //============= 新 增 股 票 到 我 的 最 愛 ===============
 bot.dialog('addtw_favorite', [
     function (session) {
@@ -990,7 +984,6 @@ bot.dialog('addtw_favorite', [
         addtwToSheetDB(session.dialogData.addTicker.toUpperCase(), column="twticker", sheet="tw", returnDialog="tw", session);
     }
 ]).triggerAction({ matches: /^新增最愛台股$/ });
-
 
 //================ 刪 除 我 的 最 愛 股 票 =================
 bot.dialog('deltw_favorite', [
@@ -1028,7 +1021,6 @@ bot.dialog('deltw_favorite', [
 ]).triggerAction({ matches: /^刪除最愛台股$/ });
 // #endregion ======股結束=============================
 
-
 bot.dialog('metal_care', [
     function(session) {
         session.dialogData.cares = {};        
@@ -1052,7 +1044,6 @@ bot.dialog('metal_care', [
     }
 ])
 
-
 bot.dialog('recommend', [
     function(session) {
         session.send('需要為您推薦投顧老師嗎?');
@@ -1075,7 +1066,6 @@ bot.dialog('recommend', [
         session.replaceDialog("fraction", {reprompt:false});
     }    
 ]).triggerAction({ matches: /^投顧老師$/ });
-
 
 bot.dialog('fraction', [
     function(session, results) {
