@@ -143,7 +143,7 @@ bot.dialog('foreign', [
         request(options, function (error, response, body) {
             var currency = body;
             var ExchangeRate = currency["Realtime Currency Exchange Rate"]["5. Exchange Rate"]
-            session.endDialog(`1元${session.dialogData.tid}可兌換成$${ExchangeRate}元的${session.dialogData.fid}`);
+            session.endDialog(`1元${session.dialogData.fid}可兌換成$${ExchangeRate}元的${session.dialogData.tid}`);
             session.replaceDialog('foreign');
         });
 
@@ -215,7 +215,7 @@ function showPrice(toCurrency, session) {
             var currency = body;
 
             var ExchangeRate = currency["Realtime Currency Exchange Rate"]["5. Exchange Rate"]
-            var msg = "1元"+FROMCURRENCY+"可換成" + ExchangeRate + "的"+ toCurrency ;
+            var msg = "1元"+ toCurrency+"可換成" + ExchangeRate + "的"+FROMCURRENCY ;
             // 每次request資料近來，就加到變數 session.dialogData.msg
             session.dialogData.msg += msg + "\r\n";
             // 每次request資料近來，就紀錄(已完成的次數+1)
