@@ -335,7 +335,7 @@ bot.dialog('fraction', [
             var msg = new builder.Message(session);
             var heroCard = new builder.HeroCard(session)
                 .title("宋智孝")
-                .subtitle("整個Running Man都是我的黃金！")
+                .subtitle("整個Running Man都是我的黃金(手)！")
                 .text("只有勝利才有金屬")
                 .images([builder.CardImage.create(session, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8glXbGlvwr5Vobct2MUIEJYacoz6WMATNobsoU5YLCWILmP69")])
                 .buttons([
@@ -348,7 +348,7 @@ bot.dialog('fraction', [
             var msg = new builder.Message(session);
             var heroCard = new builder.HeroCard(session)
                 .title("娜美")
-                .subtitle("整個One Piece都是我的黃金天堂！")
+                .subtitle("整個One Piece都是我的黃金之旅！")
                 .text("我只喜歡黃金跟橘子")
                 .images([builder.CardImage.create(session, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCZOaXpm8UnMtknPk39HASYBFWz2-mO_3aqa2B-cnMv0VadGMd")])
                 .buttons([
