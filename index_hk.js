@@ -90,7 +90,7 @@ bot.dialog('hkstock1', [
         var msg = new builder.Message(session);
         msg.suggestedActions(builder.SuggestedActions.create(
             session, [
-                builder.CardAction.imBack(session, "首頁", "🏠首頁"),
+                builder.CardAction.imBack(session, "回首頁", "🏠首頁"),
                 builder.CardAction.imBack(session, "我的最愛港股", "💖我的最愛港股"),
                 builder.CardAction.imBack(session, "新增最愛港股", "📁新增最愛港股"),
                 builder.CardAction.imBack(session, "刪除最愛港股", "🗑️刪除最愛港股")
@@ -175,7 +175,7 @@ function showPrice(hkticker, session) {
             var date = JSON.stringify(stock["dataset"]["data"][0][0]).match(/\d{4}-\d{2}-\d{2}/);
             
             var close = stock["dataset"]["data"][0][9]  
-            var msg = "股票號碼"+hkticker.toUpperCase() +"日期"+date+ " close $" + close;    
+            var msg = "股票號碼"+hkticker.toUpperCase() +"日期"                                                                                                                                                                                                                                                                                                                                                                                                                                       +date+ " close $" + close;    
             // 每次request資料近來，就加到變數 session.dialogData.msg
             session.dialogData.msg += msg+"\n";
             // 每次request資料近來，就紀錄(已完成的次數+1)
