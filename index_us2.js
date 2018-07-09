@@ -281,52 +281,13 @@ bot.dialog('del_favorite', [
 ]).triggerAction({ matches: /^刪除最愛$/ });
 // #endregion ======美股結束=============================
 
-// 金屬
-bot.dialog('metal', [
+bot.dialog('aicongo', [
     function (session) {
-        session.send('![FinTasticLogo](https://gudywedding.com.tw/wp-content/uploads/2018/07/fintastic_logo300x61.jpg)');
-        builder.Prompts.choice(session, "請選擇您想知道的金屬？", "GC|HG|SI|PL|PA", { listStyle: builder.ListStyle.button });
-        
-        // TODO 提供一個trigger event, 讓使用者可以回到首頁選單
-        //=======================回首頁按鈕===========================
-        var msg = new builder.Message(session);
-        msg.suggestedActions(builder.SuggestedActions.create(
-            session, [
-                builder.CardAction.imBack(session, "回首頁", "回首頁"),
-                builder.CardAction.imBack(session, "我的最愛", "我的最愛"),
-                builder.CardAction.imBack(session, "新增最愛", "新增最愛"),
-                builder.CardAction.imBack(session, "刪除最愛", "刪除最愛")
-            ]
-        ));
-        session.send(msg);
-        // ==========================================================
-    },
-    function (session, results) {
-        var metal_name = results.response.entity;
-        // 利用選擇的Name完成API
-        var metal_url = "https://www.quandl.com/api/v3/datasets/CHRIS/CME_" + metal_name + "1.json";
-        var options = {
-        method: "GET",
-        url: metal_url,
-        // 寫在api url ?後面的參數，要放在qs(key)的Json set內
-        qs:{
-            api_key:"sae2Txxu_kQTHFHDxyjr"
-        }, 
-        // 指定json格式的輸出
-        json: true
-        }
-        request(options, function (error, response, body) {
-            var m_body = body;
-            // TODO:用RegExpression,找出JSON檔第一筆日期的資料,可以避免節慶日找不到資料
-            // var getDate = JSON.stringify(gold["dataset"]["data"][0]).match(/\d{4}-\d{2}-\d{2}/);
-            var getDate = m_body["dataset"]["data"][0][0];
-            var getOpen = m_body["dataset"]["data"][0][1];
-            var getHigh = m_body["dataset"]["data"][0][2];
-            var getLow  = m_body["dataset"]["data"][0][3];
-            var getLast = m_body["dataset"]["data"][0][4];
-            session.endDialog(`Name ${metal_name} \nDate ${getDate} \nopen $${getOpen} \nhigh $${getHigh} \nlow $${getLow} \nLast $${getLast}`);
-            session.replaceDialog('metal');
-            // TODO 讓request資料已經完成後，才執行session.replaceDialog
-        });
-    }
-]);
+        session.send('![congo](http://localhost:8000/static/images/congo.gif)')
+        session.send("**===== 剛 果 機 器 學 習 中 =====**");
+        sleep(5000)
+        session.send('![explode](http://localhost:8000/static/images/explode.gif)')
+        session.send("**========= 機 器 爆 炸 =========**");
+        session.replaceDialog('')
+    }]).triggerAction({ matches: /^剛果機器學習$/});
+
