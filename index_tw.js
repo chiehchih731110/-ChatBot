@@ -42,7 +42,7 @@ bot.dialog('mainMenu', [
 // #endregion 首頁
 // #region 共用的sheetDB function 勿改!!===============
 //=========== function 新增Ticker sheetDB =================
-function addToSheetDB(ticker, column, sheet, returnDialog, session) {
+function addtwToSheetDB(ticker, column, sheet, returnDialog, session) {
     // 設定要加入到SheetDB的欄位名(colume), 與儲存內容(ticker)
     var body_data = `[{"${column}" : "${ticker}"}]`;
     request({
@@ -62,7 +62,7 @@ function addToSheetDB(ticker, column, sheet, returnDialog, session) {
 }
 
 //=========== function 刪除Ticker sheetDB =================
-function deleteToSheetDB(ticker, column, sheet, returnDialog, session) {
+function deletetwToSheetDB(ticker, column, sheet, returnDialog, session) {
     request({
         // 設定要加入到SheetDB的欄位名(colume), 與儲存內容(ticker)
         uri: 'https://sheetdb.io/api/v1/5b3b3ece2cfba/'+column +'/'+ ticker +'?sheet='+ sheet,
@@ -193,21 +193,21 @@ function showPrice(twticker, session) {
 
 
 //============= 新 增 股 票 到 我 的 最 愛 ===============
-bot.dialog('add_favorite', [
+bot.dialog('addtw_favorite', [
     function (session) {
         builder.Prompts.text(session, "請輸入要新增的台股:");
     },
     function (session, results) {
         session.dialogData.addTicker = results.response;
-        //呼叫addToSheetDB function, 將收到的Ticker存入sheetDB, 
+        //呼叫addtwToSheetDB function, 將收到的Ticker存入sheetDB, 
         //column = google試算表的欄位名稱; sheet = googe試算表的工作表名稱; returnDialog = 完成後回到哪個dialog
-        addToSheetDB(session.dialogData.addTicker.toUpperCase(), column="twticker", sheet="tw", returnDialog="tw", session);
+        addtwToSheetDB(session.dialogData.addTicker.toUpperCase(), column="twticker", sheet="tw", returnDialog="tw", session);
     }
 ]).triggerAction({ matches: /^新增最愛$/ });
 
 
 //================ 刪 除 我 的 最 愛 股 票 =================
-bot.dialog('del_favorite', [
+bot.dialog('deltw_favorite', [
     function (session) {
         builder.Prompts.text(session, "請輸入要刪除的台股:");
     },
@@ -226,10 +226,10 @@ bot.dialog('del_favorite', [
             // 檢查要刪除的Ticker 是否在sheetDB內(我的最愛), 如果有就刪除Ticker, 沒有就回錯誤訊息
             for (var i =0; i<session.dialogData.myFav.length; i++){
                 if (session.dialogData.myFav[i].twticker == session.dialogData.delTicker.toUpperCase()){
-                    //呼叫deleteToSheetDB function, 將收到的Ticker從sheetDB刪除
+                    //呼叫deletetwToSheetDB function, 將收到的Ticker從sheetDB刪除
                     //column = google試算表的欄位名稱; sheet = googe試算表的工作表名稱; returnDialog = 完成後回到哪個dialog 
                     session.dialogData.isinside = true;
-                    deleteToSheetDB(session.dialogData.delTicker.toUpperCase(), column="twticker", sheet="tw", returnDialog="tw", session);
+                    deletetwToSheetDB(session.dialogData.delTicker.toUpperCase(), column="twticker", sheet="tw", returnDialog="tw", session);
                     break; 
                 }
             };
