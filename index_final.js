@@ -304,7 +304,7 @@ bot.dialog('aicongo', [
         sleep(5000)
         session.send('![explode](http://localhost:8000/static/images/explode.gif)')
         session.send("**========= 機 器 爆 炸 =========**");
-        session.replaceDialog('')
+        session.replaceDialog('ai')
     }]).triggerAction({ matches: /^Congo$/ });
 
 bot.dialog('adaboost', [
@@ -312,7 +312,7 @@ bot.dialog('adaboost', [
         session.send('![adaboost](http://localhost:8000/static/images/adaboost.gif)')
         session.send("**===== AdaBoost 演算中 =====**");
         sleep(5000)
-        session.send('![meter](http://localhost:8000/static/images/explode.gif)')
+        session.send('![meter](http://localhost:8000/static/images/ai.jpg)')
         session.send("**========= 三個臭皮匠說：買 =========**");
         session.replaceDialog('ai')
     }]).triggerAction({ matches: /^AdaBoost$/ });
